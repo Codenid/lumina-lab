@@ -7,7 +7,7 @@ Kubernetes ni instalar herramientas en Windows.
 
 **Alcance real:** recorrido académico Pub/Sub → Dataflow → GCS Silver; Bronze
 independiente; carga manual de Silver a BigQuery Gold. Incluye creación opcional
-de Airflow, Dataproc y definición de Storage Transfer. No es la implementación
+de Workflows, Dataproc y definición de Storage Transfer. No es la implementación
 completa de los 23 issues ni de todas las funciones de la vista 08. Consulta
 `docs/ALCANCE.md`: Cloud Run, Looker, catálogo, forecast y orquestación funcional
 siguen pendientes. Un entorno creado no significa un caso de negocio terminado.
@@ -91,7 +91,7 @@ que esto sustituya los procesadores definidos en RS-010/011.
 
 ## 4. Costos y repetición
 
-- 01–05 crean recursos base; no arrancan Dataflow, Composer ni Dataproc.
+- 01–05 crean recursos base; no arrancan Dataflow, Workflows ni Dataproc.
 - Buckets, objetos, solicitudes Pub/Sub y consultas BigQuery pueden generar cargos.
 - Desde 07, Dataflow genera costo aunque no reciba mensajes. Usa 11 al terminar.
 - 11 conserva datos y no elimina recursos; CANCELLING no equivale a CANCELLED.
@@ -134,6 +134,6 @@ proyecto. Los opcionales tampoco se desplegaron.
 ## 7. Extensiones opcionales
 
 No son necesarias para demostrar RS-009. Consulta `docs/ALCANCE.md` antes de
-activarlas. Airflow y Dataproc requieren más tiempo, cuotas y costo que el
+activarlas. Workflows y Dataproc requieren más tiempo, cuotas y costo que el
 recorrido principal. No ejecutes todos los scripts por su número sin revisar su
 alcance: para la prueba Spark el orden es **22 → 21**.

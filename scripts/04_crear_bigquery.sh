@@ -25,6 +25,13 @@ run_query "CREATE TABLE IF NOT EXISTS \`$PROJECT_ID.$SILVER_DATASET.pedidos\` (o
 run_query "CREATE TABLE IF NOT EXISTS \`$PROJECT_ID.$SILVER_DATASET.inventario\` (snapshot_id STRING NOT NULL, warehouse_id STRING NOT NULL, store_id STRING, sku_id STRING NOT NULL, on_hand_qty INT64 NOT NULL, reserved_qty INT64 NOT NULL, effective_at TIMESTAMP NOT NULL, quality_status STRING NOT NULL)"
 run_query "CREATE TABLE IF NOT EXISTS \`$PROJECT_ID.$SILVER_DATASET.entregas\` (delivery_id STRING NOT NULL, order_id STRING NOT NULL, store_id STRING, region_id STRING, promised_at TIMESTAMP, delivered_at TIMESTAMP, delivery_cost NUMERIC, quality_status STRING NOT NULL)"
 run_query "CREATE TABLE IF NOT EXISTS \`$PROJECT_ID.$SILVER_DATASET.telemetria_activos\` (asset_id STRING NOT NULL, sensor_id STRING NOT NULL, warehouse_id STRING, store_id STRING, metric_name STRING NOT NULL, metric_value FLOAT64 NOT NULL, unit STRING NOT NULL, occurred_at TIMESTAMP NOT NULL, quality_status STRING NOT NULL)"
+for table in pedidos inventario entregas telemetria_activos; do
+  bq add-iam-policy-binding \
+    --member="serviceAccount:$WORKER" \
+    --role="roles/bigquery.dataEditor" \
+    -t "$PROJECT_ID:$SILVER_DATASET.$table" >/dev/null
+done
+echo "OK: $WORKER tiene BigQuery Data Editor sobre tablas Silver"
 while IFS= read -r statement; do
   [[ -z "$statement" ]] && continue
   statement="${statement//\{\{PROJECT_ID\}\}/$PROJECT_ID}"
