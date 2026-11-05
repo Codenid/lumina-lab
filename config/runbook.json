@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "groups": [
+    {"name": "streaming_insights", "scripts": ["43", "44", "45", "46", "47", "48"]},
+    {"name": "workflow_batch", "scripts": ["49", "50", "51", "52", "53"]},
+    {"name": "batch_productivo", "scripts": ["54", "55", "56", "57", "58"]},
+    {"name": "operational_mart", "scripts": ["59", "60", "61", "62"]},
+    {"name": "api_cloud_run", "scripts": ["63", "64", "65", "66", "67"]},
+    {"name": "looker", "scripts": ["68", "69", "70", "71"]},
+    {"name": "gobierno", "scripts": ["72", "73", "74", "75"]},
+    {"name": "seguridad", "scripts": ["76", "77", "78", "79", "80"]},
+    {"name": "auditoria_observabilidad", "scripts": ["81", "82", "83", "84", "85"]}
+  ]
+}
