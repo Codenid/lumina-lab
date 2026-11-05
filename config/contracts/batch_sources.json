@@ -1,0 +1,8 @@
+{
+  "version": "1.0",
+  "domains": {
+    "benchmark_competidores": {"producer": "Benchmark Competidores", "bronze_table": "benchmark_competidores_raw", "silver_table": "benchmark_competidores", "key": ["benchmark_id"], "fields": ["benchmark_id", "competitor_id", "sku_id", "store_id", "observed_at", "competitor_price", "availability", "source_uri"]},
+    "eventos_locales": {"producer": "Eventos Locales", "bronze_table": "eventos_locales_raw", "silver_table": "eventos_locales", "key": ["local_event_id"], "fields": ["local_event_id", "store_id", "event_type", "start_at", "end_at", "impact_score", "source_uri"]},
+    "redes_sociales": {"producer": "Redes Sociales", "bronze_table": "redes_sociales_raw", "silver_table": "redes_sociales", "key": ["post_id"], "fields": ["post_id", "platform", "published_at", "sku_id", "sentiment_score", "engagement_count", "text_hash", "source_uri"]}
+  }
+}
