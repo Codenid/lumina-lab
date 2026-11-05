@@ -24,11 +24,10 @@ Región: `us-central1`
 | 36–42 | Forecast baseline, scoring y planificación CU02 | 1 |
 | 90 | Eliminación del clúster Dataproc | 1 |
 
-## Siguiente grupo recomendado
+## Siguiente grupo pendiente
 
-El siguiente grupo es **RS-010/RS-011: segundo procesamiento streaming e Insights Retail**.
-Debe implementarse antes de API, Looker y gobierno porque esos consumidores necesitan
-un producto Gold de Insights estable.
+El siguiente grupo es **63–67: API Cloud Run RetailSmart Insights (RS-018)**.
+El Operational Mart ya integra las seis fuentes batch y las dos fuentes streaming.
 
 | Scripts propuestos | Objetivo | Estado |
 |---|---|---:|
@@ -41,16 +40,16 @@ un producto Gold de Insights estable.
 
 ## Pendientes posteriores
 
-| Grupo | Scripts propuestos | Arquitectura pendiente |
-|---|---|---|
-| Orquestación completa | 49–53 | Workflows debe ejecutar Bronze → Silver → Gold → mart, no solo consultar el mart. |
-| Batch productivo | 54–58 | Seis fuentes y transformaciones RS-014 verificadas; automatización recurrente de nuevas llegadas sigue pendiente. |
-| Operational Mart productivo | 59–62 | Integrar continuamente streaming y batch RS-017. |
-| API | 63–67 | Servicio Cloud Run RetailSmart Insights RS-018. |
-| Reporting | 68–71 | Modelo, conexión y dashboards Looker. |
-| Gobierno | 72–75 | Dataplex/Knowledge Catalog, metadatos y linaje RS-021. |
-| Seguridad | 76–80 | KMS, DLP, secretos y controles refinados RS-022. |
-| Auditoría y observabilidad | 81–85 | Audit Store, métricas, alertas y SLOs. |
+| Grupo | Scripts propuestos | Arquitectura pendiente | Estado |
+|---|---|---|---|
+| Orquestación completa | 49–53 | Workflows debe ejecutar Bronze → Silver → Gold → mart, no solo consultar el mart. | 1 |
+| Batch productivo | 54–58 | Seis fuentes y transformaciones RS-014 verificadas; automatización recurrente de nuevas llegadas sigue pendiente. | 1 |
+| Operational Mart productivo | 59–62 | Integrar continuamente streaming y batch RS-017. | 1 |
+| API | 63–67 | Servicio Cloud Run RetailSmart Insights RS-018. | PENDIENTE |
+| Reporting | 68–71 | Modelo, conexión y dashboards Looker. | PENDIENTE |
+| Gobierno | 72–75 | Dataplex/Knowledge Catalog, metadatos y linaje RS-021. | PENDIENTE |
+| Seguridad | 76–80 | KMS, DLP, secretos y controles refinados RS-022. | PENDIENTE |
+| Auditoría y observabilidad | 81–85 | Audit Store, métricas, alertas y SLOs. | PENDIENTE |
 
 ## Grupo 49–53 ejecutado
 
@@ -79,3 +78,16 @@ permisos, y cada script debe terminar con un resultado binario `1` o `0`.
 ID de lote: `batch-20261105-211629`. La carga recurrente de nuevos archivos
 requiere acordar su calendario y conectar los productores batch reales; este
 grupo verificó el recorrido con datos sintéticos.
+
+## Grupo 59–62 ejecutado
+
+| Script | Estado | Evidencia |
+|---|---:|---|
+| 59 | 1 | Contrato, ocho tablas, APIs, ubicación e identidad; permisos de lectura verificados |
+| 60 | 1 | Esquema del mart ampliado sin eliminar datos; 14 columnas verificadas |
+| 61 | 1 | MERGE de integración y scheduled query cada 6 horas; identidad efectiva verificada |
+| 62 | 1 | Transfer Run `SUCCEEDED`; ocho dominios con filas validados en BigQuery |
+
+Scheduled query: `projects/259275898660/locations/us-central1/transferConfigs/6aed73be-0000-2cc2-895e-7474463f96ad`.
+Transfer Run: `projects/259275898660/locations/us-central1/transferConfigs/6aed73be-0000-2cc2-895e-7474463f96ad/runs/6af2b841-0000-2a52-874f-c82add6fff8c`.
+Informe: `docs/RESULTADO_SCRIPTS_59_62.md`; evidencia del lote: `state/demo001/EVIDENCIA_OPERATIONAL_MART.md`.
