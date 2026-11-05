@@ -135,5 +135,5 @@ proyecto. Los opcionales tampoco se desplegaron.
 
 No son necesarias para demostrar RS-009. Consulta `docs/ALCANCE.md` antes de
 activarlas. Workflows y Dataproc requieren más tiempo, cuotas y costo que el
-recorrido principal. No ejecutes todos los scripts por su número sin revisar su
-alcance: para la prueba Spark el orden es **22 → 21**.
+recorrido principal. La secuencia opcional es **20 → 21 → 22 → 23**; 90 solo
+se usa al terminar para eliminar el clúster Dataproc.

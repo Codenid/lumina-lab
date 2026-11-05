@@ -18,9 +18,9 @@ la implementación de todos los elementos.
 | Procesamiento Tiempo Real Dataflow | No se implementa segundo job | RS-010; Gold de 10 es carga manual de demo |
 | Gold Insights Retail | Dataset + tablas de demo en 05/10 | KPIs finales, actualización continua |
 | Gold Operational Mart | No implementado | Integración streaming + batch RS-017 |
-| Ingesta Batch / Storage Transfer Service | Job definible en 23, sin ejecutar | IAM del agente y primera transferencia verificada |
+| Ingesta Batch / Storage Transfer Service | Job definible en 21, sin ejecutar | IAM del agente y primera transferencia verificada |
 | Orquestación Batch / Workflows | Workflow opcional en 20 | Integración completa de negocio y permisos de ejecución RS-015 |
-| Procesamiento Batch / Dataproc | Cluster opcional en 21 y job mínimo JSON → Parquet | Seis fuentes y transformaciones de negocio RS-014 |
+| Procesamiento Batch / Dataproc | Cluster opcional en 23 y job mínimo JSON → Parquet | Seis fuentes y transformaciones de negocio RS-014 |
 | Entrenamiento Forecast / Scoring diario | Sin implementación | RS-016; no se presenta copia de archivos como ML |
 | API RetailSmart Insights / Cloud Run | Sin implementación | API de negocio RS-018; evita desplegar un hello-world como falsa evidencia |
 | Reporting / Looker | Sin aprovisionamiento | Instancia/licencia/conexión reales. No se sustituye por Looker Studio sin decisión explícita |
@@ -43,10 +43,11 @@ continuo.** Eliminación manual, con confirmación del CLI:
 bash scripts/90_eliminar_computo_opcional.sh TU_PROJECT_ID workflow
 ```
 
-## Spark opcional: 22 → 21
+## Secuencia opcional: 20 → 21 → 22 → 23
 
-22 copia el fixture de la demo a Landing y Bronze. Esa copia es manual: no
-representa Storage Transfer. 21 crea un cluster single-node y ejecuta Spark que
+21 define Storage Transfer con permisos limitados y `--do-not-run`. 22 copia el
+fixture de la demo a Landing y Bronze. Esa copia es manual: no representa
+Storage Transfer. 23 crea un cluster single-node y ejecuta Spark que
 lee Bronze y escribe Silver Parquet. El archivo Bronze se verifica antes de
 crear el cluster. Se requieren red, conectividad y cuotas Dataproc del proyecto.
 El cluster configura autoeliminación por inactividad de 30 min y edad máxima de
@@ -59,7 +60,7 @@ bash scripts/90_eliminar_computo_opcional.sh TU_PROJECT_ID spark
 No se agregan permisos amplios ni reglas de firewall para resolver un fallo de
 red automáticamente. Conservar el mensaje y corregir solo el requisito concreto.
 
-## Storage Transfer opcional: 23
+## Storage Transfer opcional: 21
 
 Crea la definición Landing/batch → Bronze/batch sin iniciarla (`--do-not-run`).
 Antes de ejecutar hay que obtener la identidad real del agente de Storage Transfer
