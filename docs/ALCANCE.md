@@ -68,6 +68,15 @@ y concederle los permisos de origen/destino publicados por GCP. No se adivina un
 cuenta de servicio ni se concede Storage Admin sobre el proyecto. No marcar esta
 parte validada hasta transferir y leer el archivo destino.
 
+## Siguiente bloque batch: 24–28
+
+24 solicita una transferencia controlada y conserva la respuesta de la
+operación. 25 despliega la definición vigente de Workflows. 26 ejecuta el
+workflow con `DEMO_RUN_ID`. 27 verifica el destino Bronze y la última ejecución
+del workflow. 28 genera la evidencia. Estos pasos no presentan el workflow
+actual como una implementación completa de todas las transformaciones de
+negocio; esa ampliación permanece pendiente.
+
 ## Integración con el proyecto actual
 
 Este paquete es independiente, no un parche sobre código RS-009 que no pudimos

@@ -137,3 +137,8 @@ No son necesarias para demostrar RS-009. Consulta `docs/ALCANCE.md` antes de
 activarlas. Workflows y Dataproc requieren más tiempo, cuotas y costo que el
 recorrido principal. La secuencia opcional es **20 → 21 → 22 → 23**; 90 solo
 se usa al terminar para eliminar el clúster Dataproc.
+
+Para la siguiente demostración batch, ejecuta después del bloque opcional:
+**24 → 25 → 26 → 27 → 28**. Cada paso exige el marcador del anterior;
+24 ejecuta Storage Transfer, 25 despliega el Workflow, 26 lo ejecuta, 27
+verifica los resultados y 28 genera la evidencia.
