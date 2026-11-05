@@ -22,7 +22,7 @@ la implementación de todos los elementos.
 | Orquestación Batch / Workflows | Workflow opcional en 20 | Integración completa de negocio y permisos de ejecución RS-015 |
 | Procesamiento Batch / Dataproc | Cluster opcional en 23 y job mínimo JSON → Parquet | Seis fuentes y transformaciones de negocio RS-014 |
 | Entrenamiento Forecast / Scoring diario | Sin implementación | RS-016; no se presenta copia de archivos como ML |
-| API RetailSmart Insights / Cloud Run | Sin implementación | API de negocio RS-018; evita desplegar un hello-world como falsa evidencia |
+| API RetailSmart Insights / Cloud Run | Servicio privado `luminalab-insights-api` desplegado en `us-central1`; revisión `luminalab-insights-api-ra77c199111` | Validación funcional pendiente: la invocación autenticada a `/healthz` devolvió HTTP 404 y no se verificaron las cuatro rutas RS-018. Ver `docs/RESULTADO_SCRIPTS_63_67.md` |
 | Reporting / Looker | Sin aprovisionamiento | Instancia/licencia/conexión reales. No se sustituye por Looker Studio sin decisión explícita |
 | Gobierno / Knowledge Catalog | Inventario CSV original conservado | Catálogo y linaje reales RS-021; inventario no equivale a catálogo desplegado |
 | Seguridad IAM · KMS · DLP | Identidad y permisos IAM mínimos | Controles KMS/DLP RS-022 |

@@ -45,7 +45,7 @@ El Operational Mart ya integra las seis fuentes batch y las dos fuentes streamin
 | Orquestación completa | 49–53 | Workflows debe ejecutar Bronze → Silver → Gold → mart, no solo consultar el mart. | 1 |
 | Batch productivo | 54–58 | Seis fuentes y transformaciones RS-014 verificadas; automatización recurrente de nuevas llegadas sigue pendiente. | 1 |
 | Operational Mart productivo | 59–62 | Integrar continuamente streaming y batch RS-017. | 1 |
-| API | 63–67 | Servicio Cloud Run RetailSmart Insights RS-018. | PENDIENTE |
+| API | 63–67 | Servicio Cloud Run desplegado; validación funcional bloqueada por HTTP 404 autenticado en `/healthz`. | PARCIAL (66=0) |
 | Reporting | 68–71 | Modelo, conexión y dashboards Looker. | PENDIENTE |
 | Gobierno | 72–75 | Dataplex/Knowledge Catalog, metadatos y linaje RS-021. | PENDIENTE |
 | Seguridad | 76–80 | KMS, DLP, secretos y controles refinados RS-022. | PENDIENTE |
@@ -91,3 +91,18 @@ grupo verificó el recorrido con datos sintéticos.
 Scheduled query: `projects/259275898660/locations/us-central1/transferConfigs/6aed73be-0000-2cc2-895e-7474463f96ad`.
 Transfer Run: `projects/259275898660/locations/us-central1/transferConfigs/6aed73be-0000-2cc2-895e-7474463f96ad/runs/6af2b841-0000-2a52-874f-c82add6fff8c`.
 Informe: `docs/RESULTADO_SCRIPTS_59_62.md`; evidencia del lote: `state/demo001/EVIDENCIA_OPERATIONAL_MART.md`.
+
+## Grupo 63–67 — API RetailSmart Insights
+
+| Script | Estado | Evidencia |
+|---|---:|---|
+| 63 | 1 | Preflight, APIs, contrato y tablas Gold verificados |
+| 64 | 1 | Runtime, acceso por tabla y permisos mínimos de build verificados |
+| 65 | 1 | Servicio Cloud Run privado y revisión desplegada verificados |
+| 66 | 0 | HTTP 404 en invocación autenticada a `/healthz`; rutas de negocio no verificadas |
+| 67 | 1 | Estado final del servicio e IAM comprobados; cierre parcial documentado |
+
+Servicio: `luminalab-insights-api`, región `us-central1`; revisión
+`luminalab-insights-api-ra77c199111`. El grupo no está completo. El siguiente
+paso sigue siendo resolver el acceso HTTP 404 y verificar las cuatro rutas;
+68–71 no se ejecutan todavía. Evidencia: `docs/RESULTADO_SCRIPTS_63_67.md`.
