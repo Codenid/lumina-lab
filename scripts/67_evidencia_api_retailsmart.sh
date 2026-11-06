@@ -35,6 +35,20 @@ print(f'url={url}'); print(f'revision={revision}'); print(f'runtime_service_acco
 print(f'invoker={invoker}'); print('authentication=private')
 PY
 
+REVISION="$(sed -n 's/^revision=//p' "$ROOT/state/$DEMO_RUN_ID/api_final_facts.txt")"
+REQUEST_LOGS="$ROOT/state/$DEMO_RUN_ID/api_request_logs.json"
+gcloud logging read \
+  "resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"$API_SERVICE\" AND resource.labels.revision_name=\"$REVISION\"" \
+  --project="$PROJECT_ID" --limit=100 --order=desc --format=json > "$REQUEST_LOGS"
+LOGS="$(python3 - "$REQUEST_LOGS" <<'PY'
+import json,sys
+entries=json.load(open(sys.argv[1],encoding='utf-8'))
+http=sum(1 for e in entries if e.get('httpRequest'))
+app=sum(1 for e in entries if 'request method=' in e.get('textPayload',''))
+print(f'{http} solicitudes HTTP y {app} registros de aplicación observados en la revisión')
+PY
+)"
+
 RESPONSES="$ROOT/state/$DEMO_RUN_ID/api_responses"
 COUNTS="$ROOT/state/$DEMO_RUN_ID/api_route_counts.txt"
 python3 - "$RESPONSES" <<'PY' > "$COUNTS"
@@ -65,8 +79,6 @@ AUTH_ERROR='No se registró error HTTP autenticado.'
 [[ -s "$RESPONSES/healthz.error.txt" ]] && AUTH_ERROR="$(tr '\n' ' ' < "$RESPONSES/healthz.error.txt" | sed 's/[[:space:]]\+$//')"
 UNAUTH='no observada'
 [[ -s "$STATUS_FILE" ]] && UNAUTH="$(sed -n 's/^unauthenticated_http=//p' "$STATUS_FILE" | head -n1)"
-LOGS='no consultados'
-[[ -s "$ROOT/state/$DEMO_RUN_ID/api_request_log_count.txt" ]] && LOGS="$(cat "$ROOT/state/$DEMO_RUN_ID/api_request_log_count.txt")"
 
 {
   echo "# API RetailSmart Insights — $DEMO_RUN_ID"; echo
@@ -88,7 +100,7 @@ REPORT="$ROOT/docs/RESULTADO_SCRIPTS_63_67.md"
   echo '| 63 — preflight y APIs | 1 | Contrato, APIs, ubicación y cinco tablas Gold verificados |'
   echo '| 64 — identidad y permisos | 1 | Job User, cinco grants Data Viewer por tabla y permisos de build verificados |'
   echo '| 65 — despliegue | 1 | Cloud Run READY, privado y revisión registrada |'
-  echo "| 66 — rutas | $API_RESULT | $([[ $ROUTES_OK == 1 ]] && echo 'Cuatro rutas autenticadas con datos' || echo 'HTTP 404 al invocar /healthz; causa no determinada; rutas de negocio no verificadas') |"
+  echo "| 66 — rutas | $API_RESULT | $([[ $ROUTES_OK == 1 ]] && echo 'Cuatro rutas autenticadas con datos' || echo 'HTTP 404 antes del contenedor: la revisión no registró la solicitud; rutas de negocio no verificadas') |"
   echo '| 67 — evidencia final | 1 | Estado, revisión e IAM consultados en GCP; cierre parcial registrado |'; echo
   echo '## Servicio'; echo; cat "$ROOT/state/$DEMO_RUN_ID/api_final_facts.txt"; echo
   echo '## Rutas'; echo; sed 's/^/- /' "$COUNTS"; echo
@@ -96,13 +108,16 @@ REPORT="$ROOT/docs/RESULTADO_SCRIPTS_63_67.md"
   echo "- Invocación autenticada: $AUTH_ERROR"
   echo "- Logs de solicitudes: $LOGS"
   echo '- No se declara éxito funcional: la solicitud no produjo una respuesta de aplicación corroborada por logs.'; echo
+  echo '## Intentos de corrección'; echo
+  echo '- Intento 1: tráfico reafirmado al 100% en la revisión anterior; `/healthz` continuó en HTTP 404.'
+  printf '%s\n\n' "- Intento 2: revisión \`$REVISION\` creada con logging de entrada y tráfico 100%; \`/healthz\` continuó en HTTP 404 sin aparecer en los logs de la revisión."
   echo '## Identidades y permisos'; echo
   printf '%s\n' "- Runtime: \`${PREFIX}-api@$PROJECT_ID.iam.gserviceaccount.com\`; BigQuery Job User en el proyecto y Data Viewer limitado a cinco tablas Gold."
   printf '%s\n' "- Invoker del servicio privado: \`$(sed -n 's/^account=//p' "$ROOT/state/$DEMO_RUN_ID/api_preflight_ok.txt")\`, en IAM del servicio."
   printf '%s\n' "- Build: \`$(sed -n 's/^build_service_account=//p' "$ROOT/state/$DEMO_RUN_ID/api_iam_ok.txt")\`; Cloud Run Builder y Artifact Registry Writer acotado al repositorio."
   echo '- APIs habilitadas: Cloud Run, Cloud Build, Artifact Registry y Cloud Storage.'; echo
   echo 'Evidencia local: `state/demo001/EVIDENCIA_API_RETAILSMART.md`.'
-  echo 'El grupo 63–67 sigue incompleto. No ejecutar 68–71 hasta resolver el HTTP 404 y verificar las cuatro rutas.'
+  echo 'El grupo 63–67 sigue incompleto. El reporting puede preparar vistas Gold de forma independiente; la API no se considera validada hasta resolver el HTTP 404.'
 } > "$REPORT"
 printf 'revision=%s\nready=1\nprivate=1\nroutes_verified=%s\n' \
   "$(sed -n 's/^revision=//p' "$ROOT/state/$DEMO_RUN_ID/api_final_facts.txt")" "$ROUTES_OK" > "$ROOT/state/$DEMO_RUN_ID/api_verified.txt"

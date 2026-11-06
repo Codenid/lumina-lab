@@ -28,7 +28,8 @@ No intentes completar automáticamente los otros 22 issues.
    evento leído en Silver y Bronze, job cancelado, contrato actual validado,
    runbook y commit publicado según reglas del repo.
 10. Mantén explícita la lista de componentes pendientes: Workflow batch funcional,
-    segundo procesamiento streaming, forecast, mart, API, Looker y catálogo.
+    segundo procesamiento streaming, forecast, mart, API y catálogo. Looker no
+    se implementa; la recomendación futura es una aplicación externa de consumo.
     Crear una API hello-world o habilitar un API no satisface esos componentes.
 
 Resultado esperado: el usuario puede ejecutar un comando, ver un recurso o un

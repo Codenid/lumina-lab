@@ -7,7 +7,7 @@ id-b873b655d9394c5cb6d286a02b8f5de1,Entrenamiento Forecast,pendiente,Ver docs/AL
 id-5045ee70d35a4b9ca87e033bd486cbce,Gobierno Datos,pendiente,Ver docs/ALCANCE.md; no certifica despliegue
 id-b1194951ccb7415e9a6e977fd52c2789,Gold Insights Retail,"05,10 (demo manual)",Ver docs/ALCANCE.md; no certifica despliegue
 id-2f1d2779d6464c1383e5fbf375aab325,Gold Operational Mart,pendiente,Ver docs/ALCANCE.md; no certifica despliegue
-id-5a8ed19fd6f54f95904579b84f6473f4,Herramienta de Reporting Operativo,pendiente,Ver docs/ALCANCE.md; no certifica despliegue
+id-5a8ed19fd6f54f95904579b84f6473f4,Herramienta de Reporting Operativo,68-69,Cuatro vistas Gold listas; aplicación externa opcional fuera del alcance; ver docs/RESULTADO_SCRIPTS_68_69.md
 id-5fe0da5201764bba922e12e1e51ca367,Ingesta Batch,21 (solo definición),Ver docs/ALCANCE.md; no certifica despliegue
 id-2fe58104d85b4e32963decf9d8dba120,Ingesta Streaming,07,Ver docs/ALCANCE.md; no certifica despliegue
 id-aebd71adcd8043299773ae5fa2d260eb,Modelo de Demanda,02 (solo bucket),Ver docs/ALCANCE.md; no certifica despliegue

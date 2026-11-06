@@ -22,8 +22,8 @@ la implementación de todos los elementos.
 | Orquestación Batch / Workflows | Workflow opcional en 20 | Integración completa de negocio y permisos de ejecución RS-015 |
 | Procesamiento Batch / Dataproc | Cluster opcional en 23 y job mínimo JSON → Parquet | Seis fuentes y transformaciones de negocio RS-014 |
 | Entrenamiento Forecast / Scoring diario | Sin implementación | RS-016; no se presenta copia de archivos como ML |
-| API RetailSmart Insights / Cloud Run | Servicio privado `luminalab-insights-api` desplegado en `us-central1`; revisión `luminalab-insights-api-ra77c199111` | Validación funcional pendiente: la invocación autenticada a `/healthz` devolvió HTTP 404 y no se verificaron las cuatro rutas RS-018. Ver `docs/RESULTADO_SCRIPTS_63_67.md` |
-| Reporting / Looker | Sin aprovisionamiento | Instancia/licencia/conexión reales. No se sustituye por Looker Studio sin decisión explícita |
+| API RetailSmart Insights / Cloud Run | Servicio privado `luminalab-insights-api` desplegado en `us-central1`; revisión `luminalab-insights-api-r8d18faca07` | Validación funcional pendiente: la invocación autenticada a `/healthz` devolvió HTTP 404 antes del contenedor y no se verificaron las cuatro rutas RS-018. Ver `docs/RESULTADO_SCRIPTS_63_67.md` |
+| Reporting para casos de uso | Cuatro vistas de reporting en BigQuery Gold creadas y verificadas en 68–69 | Aplicación externa demo consumidora fuera del alcance actual; Looker no se implementa |
 | Gobierno / Knowledge Catalog | Inventario CSV original conservado | Catálogo y linaje reales RS-021; inventario no equivale a catálogo desplegado |
 | Seguridad IAM · KMS · DLP | Identidad y permisos IAM mínimos | Controles KMS/DLP RS-022 |
 | Audit Store | Logs del worker disponibles en Cloud Logging | Auditoría de negocio y configuración Analytics declaradas en el modelo |
@@ -76,6 +76,14 @@ workflow con `DEMO_RUN_ID`. 27 verifica el destino Bronze y la última ejecució
 del workflow. 28 genera la evidencia. Estos pasos no presentan el workflow
 actual como una implementación completa de todas las transformaciones de
 negocio; esa ampliación permanece pendiente.
+
+## Recomendación opcional futura: aplicación externa de reporting
+
+Las cuatro vistas Gold quedan disponibles para una aplicación de consumo
+externa que presente riesgo de quiebre, reposición, KPIs operativos y alertas
+de mantenimiento. La aplicación queda fuera del alcance y se evaluará después
+del último grupo obligatorio. Looker se conserva solo como recomendación
+tecnológica futura; no se aprovisiona ni se incluye en los grupos de scripts.
 
 ## Integración con el proyecto actual
 

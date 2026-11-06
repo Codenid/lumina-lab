@@ -6,9 +6,17 @@
     {"name": "batch_productivo", "scripts": ["54", "55", "56", "57", "58"]},
     {"name": "operational_mart", "scripts": ["59", "60", "61", "62"]},
     {"name": "api_cloud_run", "scripts": ["63", "64", "65", "66", "67"]},
-    {"name": "looker", "scripts": ["68", "69", "70", "71"]},
-    {"name": "gobierno", "scripts": ["72", "73", "74", "75"]},
-    {"name": "seguridad", "scripts": ["76", "77", "78", "79", "80"]},
-    {"name": "auditoria_observabilidad", "scripts": ["81", "82", "83", "84", "85"]}
+    {"name": "reporting_views_bigquery", "scripts": ["68", "69"]},
+    {"name": "gobierno", "scripts": ["70", "71", "72", "73"]},
+    {"name": "seguridad", "scripts": ["74", "75", "76", "77", "78"]},
+    {"name": "auditoria_observabilidad", "scripts": ["79", "80", "81", "82", "83"]}
+  ],
+  "optional_recommendations": [
+    {
+      "name": "aplicacion_externa_consumo_reporting",
+      "after": "79-83",
+      "status": "OPTIONAL_OUT_OF_SCOPE",
+      "description": "Aplicación demo externa que consume las vistas Gold para riesgo, reposición, KPIs y mantenimiento. Looker queda solo como recomendación futura."
+    }
   ]
 }

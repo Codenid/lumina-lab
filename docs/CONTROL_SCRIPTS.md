@@ -46,10 +46,10 @@ El Operational Mart ya integra las seis fuentes batch y las dos fuentes streamin
 | Batch productivo | 54–58 | Seis fuentes y transformaciones RS-014 verificadas; automatización recurrente de nuevas llegadas sigue pendiente. | 1 |
 | Operational Mart productivo | 59–62 | Integrar continuamente streaming y batch RS-017. | 1 |
 | API | 63–67 | Servicio Cloud Run desplegado; validación funcional bloqueada por HTTP 404 autenticado en `/healthz`. | PARCIAL (66=0) |
-| Reporting | 68–71 | Modelo, conexión y dashboards Looker. | PENDIENTE |
-| Gobierno | 72–75 | Dataplex/Knowledge Catalog, metadatos y linaje RS-021. | PENDIENTE |
-| Seguridad | 76–80 | KMS, DLP, secretos y controles refinados RS-022. | PENDIENTE |
-| Auditoría y observabilidad | 81–85 | Audit Store, métricas, alertas y SLOs. | PENDIENTE |
+| Vistas para reporting | 68–69 | Cuatro vistas BigQuery Gold verificadas; aplicación consumidora fuera del alcance actual. | 1 |
+| Gobierno | 70–73 | Dataplex/Knowledge Catalog, metadatos y linaje RS-021. | PENDIENTE |
+| Seguridad | 74–78 | KMS, DLP, secretos y controles refinados RS-022. | PENDIENTE |
+| Auditoría y observabilidad | 79–83 | Audit Store, métricas, alertas y SLOs. | PENDIENTE |
 
 ## Grupo 49–53 ejecutado
 
@@ -103,6 +103,28 @@ Informe: `docs/RESULTADO_SCRIPTS_59_62.md`; evidencia del lote: `state/demo001/E
 | 67 | 1 | Estado final del servicio e IAM comprobados; cierre parcial documentado |
 
 Servicio: `luminalab-insights-api`, región `us-central1`; revisión
-`luminalab-insights-api-ra77c199111`. El grupo no está completo. El siguiente
-paso sigue siendo resolver el acceso HTTP 404 y verificar las cuatro rutas;
-68–71 no se ejecutan todavía. Evidencia: `docs/RESULTADO_SCRIPTS_63_67.md`.
+`luminalab-insights-api-r8d18faca07`. El grupo no está completo. El siguiente
+paso sigue siendo resolver el acceso HTTP 404 y verificar las cuatro rutas.
+El grupo de reporting avanzó de forma independiente sobre Gold. Evidencia:
+`docs/RESULTADO_SCRIPTS_63_67.md`.
+
+## Grupo 68–69 — Vistas BigQuery de reporting
+
+| Script | Estado | Evidencia |
+|---|---:|---|
+| 68 | 1 | Contrato, ubicación y cuatro fuentes Gold verificados; preflight no habilita servicios externos |
+| 69 | 1 | Cuatro vistas BigQuery creadas y consultadas |
+
+El grupo queda cerrado dentro del alcance acordado: Looker sale de la
+implementación y su API está deshabilitada. Las vistas quedan listas para una
+aplicación externa opcional futura. Evidencia: `docs/RESULTADO_SCRIPTS_68_69.md`.
+El siguiente grupo secuencial pendiente es **63–67 — API**, que permanece
+parcial por su HTTP 404. Después de ese grupo, continúa **70–73 — gobierno y
+catálogo**.
+
+## Recomendación opcional posterior a todos los grupos
+
+Evaluar una aplicación externa demo que consuma las vistas Gold y muestre riesgo
+de quiebre, reposición, KPIs operativos y mantenimiento. No forma parte del
+runbook actual. Looker queda solo como recomendación alternativa; no se crearán
+scripts Looker ni se aprovisionarán instancias en este recorrido.

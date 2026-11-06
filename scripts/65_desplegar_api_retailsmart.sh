@@ -72,19 +72,22 @@ deploy_api() {
 if [[ "$SERVICE_EXISTS" == 0 ]]; then
   deploy_api
 else
-  CURRENT_REVISION="$(python3 - "$SERVICE_INFO" <<'PY'
+  LATEST_CREATED_REVISION="$(python3 - "$SERVICE_INFO" <<'PY'
 import json,sys
 s=json.load(open(sys.argv[1],encoding='utf-8'))
-print(s.get('status',{}).get('latestReadyRevisionName',''))
+print(s.get('status',{}).get('latestCreatedRevisionName',''))
 PY
 )"
-  if [[ "$CURRENT_REVISION" != "$API_SERVICE-$REVISION_SUFFIX" ]]; then
+  if [[ "$LATEST_CREATED_REVISION" != "$API_SERVICE-$REVISION_SUFFIX" ]]; then
     deploy_api
   else
-    echo "Código ya desplegado como $CURRENT_REVISION; no se crea una revisión duplicada"
+    echo "Código ya creado como $LATEST_CREATED_REVISION; no se crea una revisión duplicada"
   fi
 fi
 
+gcloud run services update-traffic "$API_SERVICE" \
+  --project="$PROJECT_ID" --region="$REGION" \
+  --to-revisions="$API_SERVICE-$REVISION_SUFFIX=100" --quiet
 gcloud run services describe "$API_SERVICE" --project="$PROJECT_ID" --region="$REGION" --format=json > "$SERVICE_INFO"
 gcloud run services add-iam-policy-binding "$API_SERVICE" --project="$PROJECT_ID" --region="$REGION" --member="user:$DEPLOYER_ACCOUNT" --role=roles/run.invoker --quiet
 gcloud run services get-iam-policy "$API_SERVICE" --project="$PROJECT_ID" --region="$REGION" --format=json > "$ROOT/state/$DEMO_RUN_ID/api_service_iam.json"

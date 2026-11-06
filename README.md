@@ -9,8 +9,10 @@ Kubernetes ni instalar herramientas en Windows.
 independiente; carga manual de Silver a BigQuery Gold. Incluye creación opcional
 de Workflows, Dataproc y definición de Storage Transfer. No es la implementación
 completa de los 23 issues ni de todas las funciones de la vista 08. Consulta
-`docs/ALCANCE.md`: Cloud Run, Looker, catálogo, forecast y orquestación funcional
-siguen pendientes. Un entorno creado no significa un caso de negocio terminado.
+`docs/ALCANCE.md`: Cloud Run, catálogo, forecast y orquestación funcional
+siguen pendientes. Looker queda fuera del alcance y solo como recomendación
+futura para una aplicación externa de consumo. Un entorno creado no significa
+un caso de negocio terminado.
 
 Basado en el ZIP base RetailSmart_Codex_Proyecto disponible el 3 de noviembre de
 2026 y el reporte de RS-009 proporcionado. No se tuvo acceso al código actual

@@ -1,5 +1,5 @@
 archimate_id,component,technology_declared,implementation_target,stage,issues,status,note
-id-296ccb2b09fe45ae94d44b36120e3e3e,API RetailSmart Insights,Cloud Run,Cloud Run service / REST API,G4,RS-018,DEPLOYED_VALIDATION_PENDING,"luminalab-insights-api; private; revision luminalab-insights-api-ra77c199111; authenticated /healthz returned HTTP 404; business routes unverified"
+id-296ccb2b09fe45ae94d44b36120e3e3e,API RetailSmart Insights,Cloud Run,Cloud Run service / REST API,G4,RS-018,DEPLOYED_VALIDATION_PENDING,"luminalab-insights-api; private; revision luminalab-insights-api-r8d18faca07; authenticated /healthz returned HTTP 404 before container; business routes unverified"
 id-91fc8e972e2e420e8a86c3afc6a260c8,Audit Store,Cloud Logging + Observability Analytics,Cloud Logging + analytics log sink / query,G1,RS-006,PLANNED_NOT_DEPLOYED,Review ADR-0003 discrepancies
 id-8ed726e0c2c14cbb8df73539854db157,Auditoría de Procesamiento,Cloud Pub/Sub,Pub/Sub audit topic + subscriptions,G1,RS-005,PLANNED_NOT_DEPLOYED,Review ADR-0003 discrepancies
 id-ca5a5c0eabe44350bb9e644176c4a48b,Bronze Layer,BigQuery,BigQuery dataset/table luminalab_bronze.eventos_raw,G1,RS-004,PLANNED_NOT_DEPLOYED,Raw envelope for the four use cases; Cloud Storage retained only for technical staging
@@ -7,7 +7,7 @@ id-b873b655d9394c5cb6d286a02b8f5de1,Entrenamiento Forecast,Dataproc,Dataproc PyS
 id-5045ee70d35a4b9ca87e033bd486cbce,Gobierno Datos,Knowledge Catalog,Knowledge Catalog / metadata and lineage,G1/G6,"RS-006,RS-021",PLANNED_NOT_DEPLOYED,
 id-b1194951ccb7415e9a6e977fd52c2789,Gold Insights Retail,BigQuery,BigQuery dataset/table (Gold insights),G1/G2,"RS-006,RS-011",PLANNED_NOT_DEPLOYED,
 id-2f1d2779d6464c1383e5fbf375aab325,Gold Operational Mart,BigQuery,BigQuery dataset/table (OLAP),G1/G4,"RS-006,RS-017",PLANNED_NOT_DEPLOYED,
-id-5a8ed19fd6f54f95904579b84f6473f4,Herramienta de Reporting Operativo,Looker,Looker reporting / connection to Gold,G1/G4,"RS-006,RS-018",PLANNED_NOT_DEPLOYED,
+id-5a8ed19fd6f54f95904579b84f6473f4,Herramienta de Reporting Operativo,Looker,BigQuery Gold reporting views; optional external consumer application,G1/G4,"RS-006,RS-018",VIEWS_READY_CONSUMER_OPTIONAL,"Looker excluded from implementation; API disabled; future demo consumer is outside current runbook"
 id-5fe0da5201764bba922e12e1e51ca367,Ingesta Batch,Storage Transfer Service,Storage Transfer Service / ingress route,G1/G3,"RS-006,RS-013",PLANNED_NOT_DEPLOYED,
 id-2fe58104d85b4e32963decf9d8dba120,Ingesta Streaming,Dataflow,Dataflow Apache Beam streaming job,G1/G2,"RS-006,RS-009",PLANNED_NOT_DEPLOYED,
 id-aebd71adcd8043299773ae5fa2d260eb,Modelo de Demanda,Cloud Storage,Cloud Storage model artifacts,G1/G3,"RS-004,RS-016",PLANNED_NOT_DEPLOYED,

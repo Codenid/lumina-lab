@@ -154,11 +154,14 @@ def dispatch(path: str, query_string: str) -> tuple[int, dict]:
 
 
 def app(environ, start_response):
-    if environ.get("REQUEST_METHOD", "GET").upper() != "GET":
+    method = environ.get("REQUEST_METHOD", "GET").upper()
+    path = environ.get("PATH_INFO", "/")
+    LOGGER.info("request method=%s path=%s", method, path)
+    if method != "GET":
         status, body = 405, {"error": "method_not_allowed"}
         headers = [("Allow", "GET")]
     else:
-        status, body = dispatch(environ.get("PATH_INFO", "/"), environ.get("QUERY_STRING", ""))
+        status, body = dispatch(path, environ.get("QUERY_STRING", ""))
         headers = []
     payload = json.dumps(body, default=_to_json_default, separators=(",", ":")).encode("utf-8")
     headers.extend(
