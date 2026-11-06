@@ -5,7 +5,7 @@ import sys
 import unittest
 from unittest.mock import patch
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "api", "retailsmart_insights"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "soluciones", "api-insights"))
 import main
 
 

@@ -14,7 +14,7 @@
 Ejecutar desde la raíz del repositorio. Estos comandos no crean, actualizan ni eliminan recursos:
 
 ```bash
-source scripts/common.sh
+source automatizacion/scripts/common.sh
 gcloud storage ls "gs://$LANDING/batch/" 2>/dev/null || true
 for table in competidores eventos_locales redes_sociales; do bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$SILVER_DATASET.$table"; done
 ```
@@ -24,7 +24,7 @@ for table in competidores eventos_locales redes_sociales; do bq --project_id="$P
 Ejecutar únicamente los verificadores del grupo; no se relanzan scripts de aprovisionamiento:
 
 ```bash
-bash scripts/35_verificar_batch_nuevos.sh
+bash automatizacion/scripts/35_verificar_batch_nuevos.sh
 ```
 
 Un verificador debe finalizar con `SCRIPT nn: 1` o la evidencia equivalente. Si devuelve `0`, conservar su salida y resolver la dependencia antes de reintentar.

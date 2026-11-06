@@ -14,7 +14,7 @@
 Ejecutar desde la raíz del repositorio. Estos comandos no crean, actualizan ni eliminan recursos:
 
 ```bash
-source scripts/common.sh
+source automatizacion/scripts/common.sh
 gcloud workflows executions list "${PREFIX}-batch" --project="$PROJECT_ID" --location="$REGION" --limit=10 --format='table(name,state,startTime,endTime)'
 bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$GOLD_DATASET.operational_mart"
 ```
@@ -24,8 +24,8 @@ bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$GOLD_DATASET.operational_mart"
 Ejecutar únicamente los verificadores del grupo; no se relanzan scripts de aprovisionamiento:
 
 ```bash
-bash scripts/52_verificar_workflow_batch_completo.sh
-bash scripts/53_generar_evidencia_workflow_batch.sh
+bash automatizacion/scripts/52_verificar_workflow_batch_completo.sh
+bash automatizacion/scripts/53_generar_evidencia_workflow_batch.sh
 ```
 
 Un verificador debe finalizar con `SCRIPT nn: 1` o la evidencia equivalente. Si devuelve `0`, conservar su salida y resolver la dependencia antes de reintentar.

@@ -14,7 +14,7 @@
 Ejecutar desde la raíz del repositorio. Estos comandos no crean, actualizan ni eliminan recursos:
 
 ```bash
-source scripts/common.sh
+source automatizacion/scripts/common.sh
 gcloud projects describe "$PROJECT_ID" --format='table(projectId,projectNumber,lifecycleState)'
 gcloud asset search-all-resources --scope="projects/$PROJECT_ID" --query="$PREFIX" --format='table(assetType,displayName,location)
 ```
@@ -24,7 +24,7 @@ gcloud asset search-all-resources --scope="projects/$PROJECT_ID" --query="$PREFI
 Ejecutar únicamente los verificadores del grupo; no se relanzan scripts de aprovisionamiento:
 
 ```bash
-bash scripts/00_verificar_acceso.sh
+bash automatizacion/scripts/00_verificar_acceso.sh
 ```
 
 Un verificador debe finalizar con `SCRIPT nn: 1` o la evidencia equivalente. Si devuelve `0`, conservar su salida y resolver la dependencia antes de reintentar.

@@ -14,7 +14,7 @@
 Ejecutar desde la raíz del repositorio. Estos comandos no crean, actualizan ni eliminan recursos:
 
 ```bash
-source scripts/common.sh
+source automatizacion/scripts/common.sh
 gcloud kms keyrings list --project="$PROJECT_ID" --location="$REGION"
 gcloud secrets list --project="$PROJECT_ID" --format='table(name,createTime)'
 gcloud dlp inspect-templates list --project="$PROJECT_ID" --location="$REGION" --format='table(name,displayName)
@@ -25,7 +25,7 @@ gcloud dlp inspect-templates list --project="$PROJECT_ID" --location="$REGION" -
 Ejecutar únicamente los verificadores del grupo; no se relanzan scripts de aprovisionamiento:
 
 ```bash
-bash scripts/78_verificar_seguridad_evidencia.sh
+bash automatizacion/scripts/78_verificar_seguridad_evidencia.sh
 ```
 
 Un verificador debe finalizar con `SCRIPT nn: 1` o la evidencia equivalente. Si devuelve `0`, conservar su salida y resolver la dependencia antes de reintentar.

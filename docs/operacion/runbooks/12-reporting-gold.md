@@ -14,7 +14,7 @@
 Ejecutar desde la raíz del repositorio. Estos comandos no crean, actualizan ni eliminan recursos:
 
 ```bash
-source scripts/common.sh
+source automatizacion/scripts/common.sh
 for view in vw_insights_streaming vw_riesgo_quiebre_despacho vw_plan_reposicion vw_kpis_operativos; do
   bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$GOLD_DATASET.$view" | head -n 12
 done

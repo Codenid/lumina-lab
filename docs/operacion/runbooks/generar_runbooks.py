@@ -24,68 +24,68 @@ RUNBOOKS = [
 
 root = Path(__file__).resolve().parent
 repo = root.parents[2]
-groups = {group["name"]: group["scripts"] for group in json.loads((repo / "config/runbook.json").read_text(encoding="utf-8"))["groups"]}
+groups = {group["name"]: group["scripts"] for group in json.loads((repo / "automatizacion/configuracion/runbook.json").read_text(encoding="utf-8"))["groups"]}
 
 # Consultas de diagnóstico de solo lectura. No invocan el aprovisionamiento.
-CLI_DEFAULT = '''source scripts/common.sh
+CLI_DEFAULT = '''source automatizacion/scripts/common.sh
 gcloud projects describe "$PROJECT_ID" --format='table(projectId,projectNumber,lifecycleState)'
 gcloud asset search-all-resources --scope="projects/$PROJECT_ID" --query="$PREFIX" --format='table(assetType,displayName,location)'''
 
 CLI_CHECKS = {
-    "fundacion": '''source scripts/common.sh
+    "fundacion": '''source automatizacion/scripts/common.sh
 gcloud storage buckets list --project="$PROJECT_ID" --format='table(name,location,uniformBucketLevelAccess.enabled)' | grep "$PREFIX"
 for ds in "$BRONZE_DATASET" "$SILVER_DATASET" "$GOLD_DATASET"; do bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$ds" | head -n 12; done
 gcloud pubsub topics list --project="$PROJECT_ID" --format='value(name)' | grep "$PREFIX"''',
-    "streaming_base": '''source scripts/common.sh
+    "streaming_base": '''source automatizacion/scripts/common.sh
 gcloud pubsub subscriptions describe "$RAW_BQ_SUB" --project="$PROJECT_ID" --format='yaml(topic,bigqueryConfig)'
 bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$BRONZE_DATASET.eventos_raw_pubsub"
 bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$SILVER_DATASET.pedidos"
 bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$GOLD_DATASET.cu03_kpis_operativos"''',
-    "batch_casos_uso": '''source scripts/common.sh
+    "batch_casos_uso": '''source automatizacion/scripts/common.sh
 for table in cu01_riesgo_quiebre_despacho cu02_plan_reposicion cu03_kpis_operativos cu04_alertas_mantenimiento operational_mart; do
   bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$GOLD_DATASET.$table" | head -n 12
 done''',
-    "integracion_batch": '''source scripts/common.sh
+    "integracion_batch": '''source automatizacion/scripts/common.sh
 gcloud workflows list --project="$PROJECT_ID" --location="$REGION" --format='table(name,state,updateTime)'
 gcloud transfer jobs list --project="$PROJECT_ID" --format='table(name,status,description)'
 gcloud dataproc clusters list --project="$PROJECT_ID" --region="$REGION" --format='table(clusterName,status.state,status.stateStartTime)''',
-    "nuevas_fuentes_batch": '''source scripts/common.sh
+    "nuevas_fuentes_batch": '''source automatizacion/scripts/common.sh
 gcloud storage ls "gs://$LANDING/batch/" 2>/dev/null || true
 for table in competidores eventos_locales redes_sociales; do bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$SILVER_DATASET.$table"; done''',
-    "forecast": '''source scripts/common.sh
+    "forecast": '''source automatizacion/scripts/common.sh
 gcloud storage ls "gs://$MODELS/forecast/" 2>/dev/null || true
 bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$GOLD_DATASET.forecast_predictions"
 bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$GOLD_DATASET.cu02_plan_reposicion"''',
-    "streaming_insights": '''source scripts/common.sh
+    "streaming_insights": '''source automatizacion/scripts/common.sh
 gcloud pubsub subscriptions describe "${PREFIX}-insights-dataflow" --project="$PROJECT_ID" --format='yaml(topic,ackDeadlineSeconds)'
 bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$GOLD_DATASET.insights_streaming"
 bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$GOLD_DATASET.procesamiento_auditoria"''',
-    "workflow_batch_completo": '''source scripts/common.sh
+    "workflow_batch_completo": '''source automatizacion/scripts/common.sh
 gcloud workflows executions list "${PREFIX}-batch" --project="$PROJECT_ID" --location="$REGION" --limit=10 --format='table(name,state,startTime,endTime)'
 bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$GOLD_DATASET.operational_mart"''',
-    "batch_productivo": '''source scripts/common.sh
+    "batch_productivo": '''source automatizacion/scripts/common.sh
 gcloud storage ls "gs://$BRONZE/batch/" 2>/dev/null | tail -n 20
 bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$GOLD_DATASET.operational_mart"''',
-    "operational_mart": '''source scripts/common.sh
+    "operational_mart": '''source automatizacion/scripts/common.sh
 bq --project_id="$PROJECT_ID" ls --transfer_config --transfer_location="$REGION" --format=prettyjson
 bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$GOLD_DATASET.operational_mart"''',
-    "reporting": '''source scripts/common.sh
+    "reporting": '''source automatizacion/scripts/common.sh
 for view in vw_insights_streaming vw_riesgo_quiebre_despacho vw_plan_reposicion vw_kpis_operativos; do
   bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$GOLD_DATASET.$view" | head -n 12
 done''',
-    "gobierno": '''source scripts/common.sh
+    "gobierno": '''source automatizacion/scripts/common.sh
 gcloud services list --enabled --project="$PROJECT_ID" --filter='config.name:(datalineage.googleapis.com OR dataplex.googleapis.com)' --format='table(config.name,state)'
 gcloud dataplex datascans list --project="$PROJECT_ID" --location="$REGION" --format='table(name,state)' 2>/dev/null || true''',
-    "seguridad": '''source scripts/common.sh
+    "seguridad": '''source automatizacion/scripts/common.sh
 gcloud kms keyrings list --project="$PROJECT_ID" --location="$REGION"
 gcloud secrets list --project="$PROJECT_ID" --format='table(name,createTime)'
 gcloud dlp inspect-templates list --project="$PROJECT_ID" --location="$REGION" --format='table(name,displayName)''',
-    "auditoria_observabilidad": '''source scripts/common.sh
+    "auditoria_observabilidad": '''source automatizacion/scripts/common.sh
 gcloud logging sinks list --project="$PROJECT_ID" --format='table(name,destination)'
 gcloud logging metrics list --project="$PROJECT_ID" --format='table(name,description)'
 gcloud monitoring policies list --project="$PROJECT_ID" --format='table(displayName,enabled)'
 bq --project_id="$PROJECT_ID" ls | grep -i audit || true''',
-    "api_cloud_run": '''source scripts/common.sh
+    "api_cloud_run": '''source automatizacion/scripts/common.sh
 SERVICE="${PREFIX}-insights-api"
 URL="$(gcloud run services describe "$SERVICE" --project="$PROJECT_ID" --region="$REGION" --format='value(status.url)')"
 TOKEN="$(gcloud auth print-identity-token)"
@@ -105,7 +105,7 @@ def validation_scripts(group):
     terms = ("verificar", "evidencia", "ver_estado")
     return [stem for stem in groups[group] if any(term in stem for term in terms)]
 for filename, title, group, console, expected, closure in RUNBOOKS:
-    commands = "\n".join(f"bash scripts/{stem}.sh" for stem in validation_scripts(group)) or "# No hay verificador dedicado; usar la validación CLI anterior."
+    commands = "\n".join(f"bash automatizacion/scripts/{stem}.sh" for stem in validation_scripts(group)) or "# No hay verificador dedicado; usar la validación CLI anterior."
     cli = CLI_CHECKS.get(group, CLI_DEFAULT)
     (root / filename).write_text(f'''# {title}\n\n**Grupo:** `{group}`  \n**Consola GCP:** {console}\n\n## Validación manual\n\n1. Abrir el servicio indicado en la consola del proyecto configurado.\n2. Filtrar recursos por `PREFIX` y revisar la región configurada.\n3. Confirmar: {expected}\n\n## Validación por CLI — solo lectura\n\nEjecutar desde la raíz del repositorio. Estos comandos no crean, actualizan ni eliminan recursos:\n\n```bash\n{cli}\n```\n\n## Validación automática existente\n\nEjecutar únicamente los verificadores del grupo; no se relanzan scripts de aprovisionamiento:\n\n```bash\n{commands}\n```\n\nUn verificador debe finalizar con `SCRIPT nn: 1` o la evidencia equivalente. Si devuelve `0`, conservar su salida y resolver la dependencia antes de reintentar.\n\n## Cierre operativo\n\n{closure}\n''', encoding='utf-8')
     print(root / filename)

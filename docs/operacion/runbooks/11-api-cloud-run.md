@@ -14,7 +14,7 @@
 Ejecutar desde la raíz del repositorio. Estos comandos no crean, actualizan ni eliminan recursos:
 
 ```bash
-source scripts/common.sh
+source automatizacion/scripts/common.sh
 SERVICE="${PREFIX}-insights-api"
 URL="$(gcloud run services describe "$SERVICE" --project="$PROJECT_ID" --region="$REGION" --format='value(status.url)')"
 TOKEN="$(gcloud auth print-identity-token)"
@@ -34,8 +34,8 @@ done
 Ejecutar únicamente los verificadores del grupo; no se relanzan scripts de aprovisionamiento:
 
 ```bash
-bash scripts/66_verificar_api_retailsmart.sh
-bash scripts/67_evidencia_api_retailsmart.sh
+bash automatizacion/scripts/66_verificar_api_retailsmart.sh
+bash automatizacion/scripts/67_evidencia_api_retailsmart.sh
 ```
 
 Un verificador debe finalizar con `SCRIPT nn: 1` o la evidencia equivalente. Si devuelve `0`, conservar su salida y resolver la dependencia antes de reintentar.

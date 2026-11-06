@@ -14,7 +14,7 @@
 Ejecutar desde la raíz del repositorio. Estos comandos no crean, actualizan ni eliminan recursos:
 
 ```bash
-source scripts/common.sh
+source automatizacion/scripts/common.sh
 gcloud services list --enabled --project="$PROJECT_ID" --filter='config.name:(datalineage.googleapis.com OR dataplex.googleapis.com)' --format='table(config.name,state)'
 gcloud dataplex datascans list --project="$PROJECT_ID" --location="$REGION" --format='table(name,state)' 2>/dev/null || true
 ```
@@ -24,7 +24,7 @@ gcloud dataplex datascans list --project="$PROJECT_ID" --location="$REGION" --fo
 Ejecutar únicamente los verificadores del grupo; no se relanzan scripts de aprovisionamiento:
 
 ```bash
-bash scripts/73_verificar_linaje_y_evidencia.sh
+bash automatizacion/scripts/73_verificar_linaje_y_evidencia.sh
 ```
 
 Un verificador debe finalizar con `SCRIPT nn: 1` o la evidencia equivalente. Si devuelve `0`, conservar su salida y resolver la dependencia antes de reintentar.

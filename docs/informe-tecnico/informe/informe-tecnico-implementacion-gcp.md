@@ -117,8 +117,8 @@ El Operational Mart integra fuentes streaming y batch. Cuatro vistas Gold prepar
 1. Crear o seleccionar un proyecto con facturación, red, cuotas y políticas organizacionales compatibles.
 2. Autenticar `gcloud` y Application Default Credentials.
 3. Copiar `config.env.example` a `config.env` y definir proyecto, región, red, prefijo y ejecución.
-4. Ejecutar `bash scripts/00_runbook.sh` para validar el inventario.
-5. Ejecutar los grupos en el orden de `config/runbook.json`.
+4. Ejecutar `bash automatizacion/scripts/00_runbook.sh` para validar el inventario.
+5. Ejecutar los grupos en el orden de `automatizacion/configuracion/runbook.json`.
 6. Usar un `DEMO_RUN_ID` nuevo para cada ensayo y ejecutar los cierres de Dataflow cuando corresponda.
 
 El script 90 se mantiene fuera de la secuencia porque elimina cómputo opcional.

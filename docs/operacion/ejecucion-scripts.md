@@ -1,7 +1,7 @@
 # Control de ejecución reproducible
 
-El orden canónico vive en [`config/runbook.json`](../../config/runbook.json).
-`bash scripts/00_runbook.sh` valida que todos los archivos requeridos del
+El orden canónico vive en [`automatizacion/configuracion/runbook.json`](../../automatizacion/configuracion/runbook.json).
+`bash automatizacion/scripts/00_runbook.sh` valida que todos los archivos requeridos del
 recorrido `00–83` estén presentes sin ejecutar operaciones en GCP.
 
 ## Convención de resultado

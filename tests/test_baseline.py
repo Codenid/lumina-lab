@@ -2,7 +2,8 @@ import json,sys,unittest,subprocess,tempfile
 from pathlib import Path
 from unittest.mock import patch
 ROOT=Path(__file__).resolve().parents[1]
-sys.path.insert(0,str(ROOT/'python'))
+sys.path.insert(0,str(ROOT/'automatizacion'/'utilidades'))
+sys.path.insert(0,str(ROOT/'soluciones'/'procesamiento-streaming'))
 from contract import normalize,canonical
 from ensure import check,main
 
@@ -36,6 +37,6 @@ class BaselineTest(unittest.TestCase):
  def test_verificacion_objeto_detecta_contenido_distinto(self):
   with tempfile.TemporaryDirectory() as d:
    a=Path(d)/'a';b=Path(d)/'b';a.write_text('{"event_id":"a"}');b.write_text('{"event_id":"b"}')
-   p=subprocess.run([sys.executable,str(ROOT/'python/compare.py'),str(a),str(b)],capture_output=True)
+   p=subprocess.run([sys.executable,str(ROOT/'automatizacion/utilidades/compare.py'),str(a),str(b)],capture_output=True)
    self.assertNotEqual(p.returncode,0)
 if __name__=='__main__':unittest.main()

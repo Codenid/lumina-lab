@@ -12,17 +12,19 @@ productos analíticos, API privada, gobierno, seguridad y observabilidad.
 | Consultar los casos de uso Gold | [docs/funcional/casos-uso.md](docs/funcional/casos-uso.md) |
 | Ejecutar el aprovisionamiento en orden | [docs/operacion/ejecucion-scripts.md](docs/operacion/ejecucion-scripts.md) |
 | Leer el informe técnico de implementación | [docs/informe-tecnico/informe/](docs/informe-tecnico/informe/) |
+| Revisar las soluciones que se despliegan | [soluciones/](soluciones/) |
+| Revisar automatización, contratos y scripts | [automatizacion/](automatizacion/) |
 
 ## Ejecución inicial
 
 ```bash
 cp config.env.example config.env
 # Completa PROJECT_ID, REGION, NETWORK, PREFIX y DEMO_RUN_ID.
-bash scripts/00_runbook.sh
-bash scripts/00_verificar_acceso.sh
+bash automatizacion/scripts/00_runbook.sh
+bash automatizacion/scripts/00_verificar_acceso.sh
 ```
 
-Continúa con los grupos definidos en [`config/runbook.json`](config/runbook.json).
+Continúa con los grupos definidos en [`automatizacion/configuracion/runbook.json`](automatizacion/configuracion/runbook.json).
 Los scripts son idempotentes: verifican recursos existentes y se detienen ante
 divergencias o permisos insuficientes.
 

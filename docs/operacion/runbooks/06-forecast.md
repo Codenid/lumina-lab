@@ -14,7 +14,7 @@
 Ejecutar desde la raíz del repositorio. Estos comandos no crean, actualizan ni eliminan recursos:
 
 ```bash
-source scripts/common.sh
+source automatizacion/scripts/common.sh
 gcloud storage ls "gs://$MODELS/forecast/" 2>/dev/null || true
 bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$GOLD_DATASET.forecast_predictions"
 bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$GOLD_DATASET.cu02_plan_reposicion"
@@ -25,7 +25,7 @@ bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$GOLD_DATASET.cu02_plan_reposici
 Ejecutar únicamente los verificadores del grupo; no se relanzan scripts de aprovisionamiento:
 
 ```bash
-bash scripts/42_verificar_forecast_evidencia.sh
+bash automatizacion/scripts/42_verificar_forecast_evidencia.sh
 ```
 
 Un verificador debe finalizar con `SCRIPT nn: 1` o la evidencia equivalente. Si devuelve `0`, conservar su salida y resolver la dependencia antes de reintentar.

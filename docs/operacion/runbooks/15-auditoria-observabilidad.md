@@ -14,7 +14,7 @@
 Ejecutar desde la raíz del repositorio. Estos comandos no crean, actualizan ni eliminan recursos:
 
 ```bash
-source scripts/common.sh
+source automatizacion/scripts/common.sh
 gcloud logging sinks list --project="$PROJECT_ID" --format='table(name,destination)'
 gcloud logging metrics list --project="$PROJECT_ID" --format='table(name,description)'
 gcloud monitoring policies list --project="$PROJECT_ID" --format='table(displayName,enabled)'
@@ -26,7 +26,7 @@ bq --project_id="$PROJECT_ID" ls | grep -i audit || true
 Ejecutar únicamente los verificadores del grupo; no se relanzan scripts de aprovisionamiento:
 
 ```bash
-bash scripts/83_verificar_observabilidad_evidencia.sh
+bash automatizacion/scripts/83_verificar_observabilidad_evidencia.sh
 ```
 
 Un verificador debe finalizar con `SCRIPT nn: 1` o la evidencia equivalente. Si devuelve `0`, conservar su salida y resolver la dependencia antes de reintentar.

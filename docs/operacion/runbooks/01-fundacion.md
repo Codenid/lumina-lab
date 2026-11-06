@@ -14,7 +14,7 @@
 Ejecutar desde la raíz del repositorio. Estos comandos no crean, actualizan ni eliminan recursos:
 
 ```bash
-source scripts/common.sh
+source automatizacion/scripts/common.sh
 gcloud storage buckets list --project="$PROJECT_ID" --format='table(name,location,uniformBucketLevelAccess.enabled)' | grep "$PREFIX"
 for ds in "$BRONZE_DATASET" "$SILVER_DATASET" "$GOLD_DATASET"; do bq --project_id="$PROJECT_ID" show "$PROJECT_ID:$ds" | head -n 12; done
 gcloud pubsub topics list --project="$PROJECT_ID" --format='value(name)' | grep "$PREFIX"
