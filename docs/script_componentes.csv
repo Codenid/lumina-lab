@@ -1,6 +1,6 @@
 archimate_id,componente,scripts,alcance
 id-296ccb2b09fe45ae94d44b36120e3e3e,API RetailSmart Insights,63-67,Cloud Run READY; cuatro rutas autenticadas devuelven datos (66=1); ver docs/RESULTADO_SCRIPTS_63_67.md
-id-91fc8e972e2e420e8a86c3afc6a260c8,Audit Store,pendiente,Ver docs/ALCANCE.md; no certifica despliegue
+id-91fc8e972e2e420e8a86c3afc6a260c8,Audit Store,79-83,Sink, métrica, alerta, SLO y evento sintético verificados; ver docs/RESULTADO_SCRIPTS_79_83.md
 id-8ed726e0c2c14cbb8df73539854db157,Auditoría de Procesamiento,04 (solo tópico),Ver docs/ALCANCE.md; no certifica despliegue
 id-ca5a5c0eabe44350bb9e644176c4a48b,Bronze Layer,"02,04",Ver docs/ALCANCE.md; no certifica despliegue
 id-b873b655d9394c5cb6d286a02b8f5de1,Entrenamiento Forecast,pendiente,Ver docs/ALCANCE.md; no certifica despliegue

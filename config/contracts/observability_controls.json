@@ -1,0 +1,9 @@
+{
+  "project": "lumina-lab-513704",
+  "region": "us-central1",
+  "archimate_id": "id-91fc8e972e2e420e8a86c3afc6a260c8",
+  "apis": ["logging.googleapis.com", "monitoring.googleapis.com"],
+  "audit_store": {"dataset": "luminalab_audit", "sink": "luminalab-audit-sink", "log_id": "luminalab_demo_audit"},
+  "metric": {"id": "luminalab_api_errors", "display_name": "Lumina Lab API errors", "alert_display_name": "Lumina Lab API error rate alert"},
+  "service_monitoring": {"service_id": "luminalab-insights-api", "service_name": "luminalab-insights-api", "slo_id": "luminalab-availability-99", "goal": 0.99, "rolling_period": "86400s"}
+}

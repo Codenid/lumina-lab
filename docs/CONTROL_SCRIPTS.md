@@ -67,7 +67,7 @@ El Operational Mart ya integra las seis fuentes batch y las dos fuentes streamin
 | Vistas para reporting | 68–69 | Cuatro vistas BigQuery Gold verificadas; aplicación consumidora fuera del alcance actual. | 1 |
 | Gobierno | 70–73 | 44 activos catalogados, metadatos por capa y cuatro vínculos de linaje verificados. | 1 |
 | Seguridad | 74–78 | KMS regional, secreto con CMEK, IAM por recurso y plantilla DLP verificados. | 1 |
-| Auditoría y observabilidad | 79–83 | Audit Store, métricas, alertas y SLOs. | PENDIENTE |
+| Auditoría y observabilidad | 79–83 | Sink y Audit Store, métrica, alerta, SLO y evento verificados. | 1 |
 
 ## Grupo 49–53 ejecutado
 
@@ -149,8 +149,8 @@ El grupo 70–73 está completado.
 | 77 | 1 | Plantilla DLP regional y prueba sintética sin persistir quotes |
 | 78 | 1 | Recursos e IAM consultados nuevamente; informe final generado |
 
-Evidencia: `docs/RESULTADO_SCRIPTS_74_78.md`. El siguiente grupo secuencial es
-**79–83 — auditoría y observabilidad**.
+Evidencia: `docs/RESULTADO_SCRIPTS_74_78.md`. El grupo 79–83 está completado;
+el Audit Store recibió y verificó el evento sintético.
 
 ## Recomendación opcional posterior a todos los grupos
 

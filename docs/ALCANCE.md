@@ -26,7 +26,7 @@ la implementación de todos los elementos.
 | Reporting para casos de uso | Cuatro vistas de reporting en BigQuery Gold creadas y verificadas en 68–69 | Aplicación externa demo consumidora fuera del alcance actual; Looker no se implementa |
 | Gobierno / Knowledge Catalog | 44 activos Bronze/Silver/Gold catalogados; overview por capa publicado; cuatro vínculos source→vista verificados en Data Lineage | Gobierno y linaje RS-021 completados para el alcance actual |
 | Seguridad IAM · KMS · DLP | Clave KMS regional con rotación; secreto regional cifrado con CMEK; acceso limitado al runtime; plantilla DLP regional con prueba sintética | Integración de secretos reales de productores externos queda fuera del laboratorio; RS-022 completado para el alcance actual |
-| Audit Store | Logs del worker disponibles en Cloud Logging | Auditoría de negocio y configuración Analytics declaradas en el modelo |
+| Audit Store | Dataset BigQuery `luminalab_audit`, sink Cloud Logging, métrica, alert policy, SLO y evento sintético verificados | Auditoría de negocio adicional queda fuera del grupo; RS-023 completado para el alcance actual |
 
 ## Workflows opcional: 20
 
