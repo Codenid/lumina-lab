@@ -12,6 +12,8 @@ completa de los 23 issues ni de todas las funciones de la vista 08. Consulta
 `docs/ALCANCE.md`: Cloud Run ya está desplegado y sus cuatro rutas funcionales
 fueron verificadas. Gobierno 70–73 está completo: catálogo y metadatos se
 verificaron en 44 activos y Data Lineage confirmó los cuatro vínculos Gold.
+Seguridad 74–78 también está completa para el laboratorio: KMS con rotación,
+Secret Manager con CMEK e IAM por recurso, y plantilla DLP regional verificada.
 Looker queda fuera del alcance y solo como recomendación
 futura para una aplicación externa de consumo. Un entorno creado no significa
 un caso de negocio terminado.

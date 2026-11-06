@@ -22,6 +22,14 @@ Región: `us-central1`
 | 29 | Preflight de permisos batch | 1 |
 | 30–35 | Contratos y tres dominios batch adicionales | 1 |
 | 36–42 | Forecast baseline, scoring y planificación CU02 | 1 |
+| 43–48 | Segundo streaming de Insights y auditoría | 1 |
+| 49–53 | Workflow batch completo | 1 |
+| 54–58 | Batch productivo de seis fuentes | 1 |
+| 59–62 | Operational Mart productivo | 1 |
+| 63–67 | API privada Cloud Run | 1 |
+| 68–69 | Vistas Gold para reporting | 1 |
+| 70–73 | Gobierno, catálogo y linaje | 1 |
+| 74–78 | KMS, Secret Manager y DLP | 1 |
 | 90 | Eliminación del clúster Dataproc | 1 |
 
 ## Grupo 70–73 — Gobierno y catálogo (RS-021)
@@ -58,7 +66,7 @@ El Operational Mart ya integra las seis fuentes batch y las dos fuentes streamin
 | API | 63–67 | Cloud Run READY y privado; cuatro rutas funcionales responden con datos; `/healthz` no es requisito. | 1 |
 | Vistas para reporting | 68–69 | Cuatro vistas BigQuery Gold verificadas; aplicación consumidora fuera del alcance actual. | 1 |
 | Gobierno | 70–73 | 44 activos catalogados, metadatos por capa y cuatro vínculos de linaje verificados. | 1 |
-| Seguridad | 74–78 | KMS, DLP, secretos y controles refinados RS-022. | PENDIENTE |
+| Seguridad | 74–78 | KMS regional, secreto con CMEK, IAM por recurso y plantilla DLP verificados. | 1 |
 | Auditoría y observabilidad | 79–83 | Audit Store, métricas, alertas y SLOs. | PENDIENTE |
 
 ## Grupo 49–53 ejecutado
@@ -129,8 +137,20 @@ funcional consulta las cuatro rutas de negocio. Evidencia:
 El grupo queda cerrado dentro del alcance acordado: Looker sale de la
 implementación y su API está deshabilitada. Las vistas quedan listas para una
 aplicación externa opcional futura. Evidencia: `docs/RESULTADO_SCRIPTS_68_69.md`.
-El grupo 70–73 está completado. El siguiente grupo secuencial es
-**74–78 — seguridad**.
+El grupo 70–73 está completado.
+
+## Grupo 74–78 — Seguridad (RS-022)
+
+| Script | Estado | Evidencia |
+|---|---:|---|
+| 74 | 1 | Contrato, runtime y APIs KMS, Secret Manager y DLP verificados |
+| 75 | 1 | Clave regional `secret-manager-cmek`, primaria habilitada y rotación de 90 días |
+| 76 | 1 | Secreto regional con CMEK y acceso limitado al runtime de Cloud Run |
+| 77 | 1 | Plantilla DLP regional y prueba sintética sin persistir quotes |
+| 78 | 1 | Recursos e IAM consultados nuevamente; informe final generado |
+
+Evidencia: `docs/RESULTADO_SCRIPTS_74_78.md`. El siguiente grupo secuencial es
+**79–83 — auditoría y observabilidad**.
 
 ## Recomendación opcional posterior a todos los grupos
 

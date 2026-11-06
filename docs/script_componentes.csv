@@ -15,7 +15,7 @@ id-b31ac9e67a204bd2996043f98f93cec1,Orquestación Batch,20 (solo entorno),Ver do
 id-0c92d1c6db4b4a0d9b97e7771ab92e61,Procesamiento Tiempo Real,pendiente,Ver docs/ALCANCE.md; no certifica despliegue
 id-8bfb1065cbe54cb69edc49ac21e37d04,Procesamiento batch,"22,23 (demo técnica)",Ver docs/ALCANCE.md; no certifica despliegue
 id-f1c2e447189e43febff98e7caa03c3ca,Scoring + Planificación Diaria,pendiente,Ver docs/ALCANCE.md; no certifica despliegue
-id-f6ff7f9f26f14cc8ab051979cca0dad6,Seguridad y Accesos,03 (solo IAM),Ver docs/ALCANCE.md; no certifica despliegue
+id-f6ff7f9f26f14cc8ab051979cca0dad6,Seguridad y Accesos,74-78,KMS con rotación; secreto CMEK e IAM por recurso; plantilla DLP regional verificada; ver docs/RESULTADO_SCRIPTS_74_78.md
 id-010fe399b04e4f32beecd20d8dfd23c8,Silver Layer,"02,07,09,23",Ver docs/ALCANCE.md; no certifica despliegue
 id-ded4a7cf707743008e148981bac087e2,Tópico Eventos Retail,04,Ver docs/ALCANCE.md; no certifica despliegue
 id-2629fa70f88949d4a1e76fb2fbbe4650,Tópico Insights Retail,04 (solo tópico),Ver docs/ALCANCE.md; no certifica despliegue

@@ -25,7 +25,7 @@ la implementación de todos los elementos.
 | API RetailSmart Insights / Cloud Run | Servicio privado `luminalab-insights-api` READY en `us-central1`; revisión `luminalab-insights-api-r8d18faca07`; cuatro rutas funcionales verificadas con datos | `/healthz` no es una capacidad de negocio ni criterio de aceptación; ver `docs/RESULTADO_SCRIPTS_63_67.md` |
 | Reporting para casos de uso | Cuatro vistas de reporting en BigQuery Gold creadas y verificadas en 68–69 | Aplicación externa demo consumidora fuera del alcance actual; Looker no se implementa |
 | Gobierno / Knowledge Catalog | 44 activos Bronze/Silver/Gold catalogados; overview por capa publicado; cuatro vínculos source→vista verificados en Data Lineage | Gobierno y linaje RS-021 completados para el alcance actual |
-| Seguridad IAM · KMS · DLP | Identidad y permisos IAM mínimos | Controles KMS/DLP RS-022 |
+| Seguridad IAM · KMS · DLP | Clave KMS regional con rotación; secreto regional cifrado con CMEK; acceso limitado al runtime; plantilla DLP regional con prueba sintética | Integración de secretos reales de productores externos queda fuera del laboratorio; RS-022 completado para el alcance actual |
 | Audit Store | Logs del worker disponibles en Cloud Logging | Auditoría de negocio y configuración Analytics declaradas en el modelo |
 
 ## Workflows opcional: 20

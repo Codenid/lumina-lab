@@ -1,0 +1,35 @@
+{
+  "project": "lumina-lab-513704",
+  "region": "us-central1",
+  "archimate_id": "id-f6ff7f9f26f14cc8ab051979cca0dad6",
+  "apis": [
+    "cloudkms.googleapis.com",
+    "secretmanager.googleapis.com",
+    "dlp.googleapis.com"
+  ],
+  "kms": {
+    "keyring": "luminalab-security",
+    "key": "secret-manager-cmek",
+    "purpose": "ENCRYPT_DECRYPT",
+    "protection_level": "SOFTWARE",
+    "rotation_period": "7776000s"
+  },
+  "secret": {
+    "id": "luminalab-runtime-credential",
+    "replication": "user-managed",
+    "consumer_service_account": "luminalab-api@lumina-lab-513704.iam.gserviceaccount.com",
+    "access_role": "roles/secretmanager.secretAccessor",
+    "description": "Credencial sintética de laboratorio; no está vinculada a un sistema externo"
+  },
+  "dlp": {
+    "template_id": "luminalab-sensitive-data",
+    "display_name": "RetailSmart sensitive data inspection",
+    "info_types": [
+      "EMAIL_ADDRESS",
+      "PHONE_NUMBER",
+      "CREDIT_CARD_NUMBER"
+    ],
+    "minimum_likelihood": "POSSIBLE",
+    "include_quote": false
+  }
+}
