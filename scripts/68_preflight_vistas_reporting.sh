@@ -6,7 +6,11 @@ CONTRACT="$ROOT/config/contracts/reporting_views.json"
 python3 - "$CONTRACT" "$PROJECT_ID" "$GOLD_DATASET" "$REGION" <<'PY'
 import json,sys
 c=json.load(open(sys.argv[1],encoding='utf-8'))
-assert c['project']==sys.argv[2] and c['dataset']==sys.argv[3] and c['location']==sys.argv[4]
+def render(value):
+    return (value.replace('{{PROJECT_ID}}',sys.argv[2])
+                 .replace('{{PREFIX}}',sys.argv[3].removesuffix('_gold'))
+                 .replace('{{REGION}}',sys.argv[4]))
+assert render(c['project'])==sys.argv[2] and render(c['dataset'])==sys.argv[3] and render(c['location'])==sys.argv[4]
 assert c['consumer']=='aplicacion_externa_opcional_futura'
 expected={
  'riesgo_quiebre':('reporting_riesgo_quiebre','cu01_riesgo_quiebre_despacho'),

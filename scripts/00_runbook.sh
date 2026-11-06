@@ -9,15 +9,15 @@ if [[ ! -f "$RUN_STATE" ]]; then printf '{"status":"STARTED","results":[]}\n' > 
 
 python3 - "$ROOT/config/runbook.json" "$ROOT/scripts" <<'PY'
 import json, pathlib, sys
-manifest=json.load(open(sys.argv[1])); scripts=pathlib.Path(sys.argv[2])
+manifest=json.load(open(sys.argv[1], encoding='utf-8')); scripts=pathlib.Path(sys.argv[2])
 for group in manifest['groups']:
-    for number in group['scripts']:
-        matches=sorted(scripts.glob(f'{number}_*.sh'))
-        if not matches:
-            print(f'SCRIPT {number}: 0')
-            print(f'Dependencia faltante: script {number} no existe todavía.')
-            print('Runbook detenido en el primer 0.')
+    print(f"GRUPO {group['name']}")
+    for stem in group['scripts']:
+        path=scripts/f'{stem}.sh'
+        if not path.is_file():
+            print(f'SCRIPT {stem}: 0')
+            print(f'Dependencia faltante: {path.name}.')
             raise SystemExit(1)
-        print(f'SCRIPT {number}: disponible')
-print('Todos los scripts pendientes están disponibles; ejecución GCP no iniciada por este preflight.')
+        print(f'SCRIPT {stem.split("_", 1)[0]}: disponible ({path.name})')
+print('RUNBOOK: 1 — todos los scripts 00–83 están disponibles. No se inició ninguna operación en GCP.')
 PY

@@ -9,13 +9,15 @@ RUNTIME_SA="${PREFIX}-api@${PROJECT_ID}.iam.gserviceaccount.com"
 [[ -n "$PROJECT_NUMBER" && -n "$ACCOUNT" ]] || { echo 'SCRIPT 74: 0 — no se determinó proyecto o cuenta activa'; exit 1; }
 
 python3 -m json.tool "$CONTRACT" >/dev/null
-python3 - "$CONTRACT" "$PROJECT_ID" "$REGION" "$RUNTIME_SA" <<'PY'
+python3 - "$CONTRACT" "$PROJECT_ID" "$REGION" "$RUNTIME_SA" "$PREFIX" <<'PY'
 import json,sys
 c=json.load(open(sys.argv[1],encoding='utf-8'))
-assert c['project']==sys.argv[2]
-assert c['region']==sys.argv[3]
+def render(value):
+    return value.replace('{{PROJECT_ID}}',sys.argv[2]).replace('{{REGION}}',sys.argv[3]).replace('{{PREFIX}}',sys.argv[5])
+assert render(c['project'])==sys.argv[2]
+assert render(c['region'])==sys.argv[3]
 assert c['archimate_id']=='id-f6ff7f9f26f14cc8ab051979cca0dad6'
-assert c['secret']['consumer_service_account']==sys.argv[4]
+assert render(c['secret']['consumer_service_account'])==sys.argv[4]
 assert c['kms']['purpose']=='ENCRYPT_DECRYPT'
 assert c['kms']['protection_level']=='SOFTWARE'
 assert c['kms']['rotation_period']=='7776000s'

@@ -1,8 +1,8 @@
 {
   "version": "1.0",
-  "project": "lumina-lab-513704",
-  "dataset": "luminalab_gold",
-  "location": "us-central1",
+  "project": "{{PROJECT_ID}}",
+  "dataset": "{{PREFIX}}_gold",
+  "location": "{{REGION}}",
   "consumer": "aplicacion_externa_opcional_futura",
   "products": {
     "riesgo_quiebre": {

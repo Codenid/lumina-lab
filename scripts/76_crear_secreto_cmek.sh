@@ -5,8 +5,8 @@ STATE="$ROOT/state/$DEMO_RUN_ID"
 CONTRACT="$ROOT/config/contracts/security_controls.json"
 [[ -s "$STATE/security_kms_ok.txt" ]] || { echo 'SCRIPT 76: 0 — dependencia: SCRIPT 75'; exit 1; }
 KEY_RESOURCE="$(sed -n 's/^key_resource=//p' "$STATE/security_kms_ok.txt")"
-SECRET="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["secret"]["id"])' "$CONTRACT")"
-RUNTIME_SA="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["secret"]["consumer_service_account"])' "$CONTRACT")"
+SECRET="$(contract_value "$CONTRACT" secret.id)"
+RUNTIME_SA="$(contract_value "$CONTRACT" secret.consumer_service_account)"
 POLICY_FILE="$STATE/security_secret_replication.json"
 printf '{"userManaged":{"replicas":[{"location":"%s","customerManagedEncryption":{"kmsKeyName":"%s"}}]}}\n' "$REGION" "$KEY_RESOURCE" > "$POLICY_FILE"
 

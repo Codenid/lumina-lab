@@ -33,3 +33,26 @@ export JOB_NAME="${PREFIX}-silver-${DEMO_RUN_ID}"
 mkdir -p "$ROOT/state/$DEMO_RUN_ID"
 ensure() { python3 "$ROOT/python/ensure.py" "$@"; }
 heading() { echo; echo "== $* =="; }
+contract_value() {
+  python3 - "$1" "$2" <<'PY'
+import json, os, sys
+value=json.load(open(sys.argv[1], encoding='utf-8'))
+for key in sys.argv[2].split('.'):
+    value=value[key]
+if not isinstance(value, str):
+    raise SystemExit(f'El valor de contrato {sys.argv[2]!r} debe ser texto')
+for key in ('PROJECT_ID', 'PREFIX', 'REGION'):
+    value=value.replace('{{'+key+'}}', os.environ[key])
+print(value)
+PY
+}
+render_template() {
+  python3 - "$1" "$2" <<'PY'
+import os, pathlib, sys
+source, target=map(pathlib.Path, sys.argv[1:])
+text=source.read_text(encoding='utf-8')
+for key in ('PROJECT_ID', 'PREFIX', 'REGION'):
+    text=text.replace('{{'+key+'}}', os.environ[key])
+target.write_text(text, encoding='utf-8')
+PY
+}

@@ -11,14 +11,14 @@ LINEAGE_OUT="$STATE/governance_lineage"
 mkdir -p "$LINEAGE_OUT"
 TOKEN="$(gcloud auth print-access-token)"
 [[ -n "$TOKEN" ]] || { echo 'SCRIPT 73: 0 — no se obtuvo token de acceso'; exit 1; }
-export TOKEN PROJECT_ID REGION
+export TOKEN PROJECT_ID REGION PREFIX
 
 if python3 - "$CONTRACT" "$LINEAGE_OUT" "$STATE/governance_metadata_ok.txt" <<'PY'
 import json,os,subprocess,sys,time,urllib.error,urllib.parse,urllib.request
 contract_path,out_dir,metadata_marker=sys.argv[1:]
 c=json.load(open(contract_path,encoding='utf-8'))
 project=os.environ['PROJECT_ID']; region=os.environ['REGION']; token=os.environ['TOKEN']
-dataset=c['datasets']['gold']['id']; pairs=c['lineage']['pairs']
+dataset=c['datasets']['gold']['id'].replace('{{PREFIX}}', os.environ['PREFIX']); pairs=c['lineage']['pairs']
 api=f'https://datalineage.googleapis.com/v1/projects/{project}/locations/{region}:searchLinks'
 os.makedirs(out_dir,exist_ok=True)
 
@@ -112,7 +112,7 @@ SCRIPT73=0
 [[ "$LINEAGE_RC" == 0 && "$LINEAGE_VERIFIED" == 4 ]] && SCRIPT73=1
 if [[ "$SCRIPT73" == 1 ]]; then GROUP_RESULT='COMPLETADO'; else GROUP_RESULT='PARCIAL'; fi
 
-REPORT="$ROOT/docs/RESULTADO_SCRIPTS_70_73.md"
+REPORT="$ROOT/state/$DEMO_RUN_ID/EVIDENCIA_GOBIERNO_LINAJE.md"
 {
   echo '# Resultado del grupo 70–73 — Gobierno y Knowledge Catalog'; echo
   printf 'Proyecto: `%s`\nRegión: `%s`\nResultado: **%s**\n\n' "$PROJECT_ID" "$REGION" "$GROUP_RESULT"
@@ -138,7 +138,7 @@ REPORT="$ROOT/docs/RESULTADO_SCRIPTS_70_73.md"
 
 if [[ "$SCRIPT73" == 1 ]]; then
   printf '70=1\n71=1\n72=1\n73=1\nresultado=COMPLETADO\n' > "$STATE/governance_group_ok.txt"
-  echo 'Grupo 70–73 COMPLETADO: evidencia guardada en docs/RESULTADO_SCRIPTS_70_73.md'
+  echo "Grupo 70–73 COMPLETADO: evidencia guardada en state/$DEMO_RUN_ID/EVIDENCIA_GOBIERNO_LINAJE.md"
 else
   printf '70=1\n71=1\n72=1\n73=0\nresultado=PARCIAL\n' > "$STATE/governance_group_ok.txt"
   echo 'Grupo 70–73 PARCIAL: linaje todavía no verificado; evidencia y causa guardadas en el informe'

@@ -3,6 +3,9 @@ source "$(dirname "$0")/common.sh"
 heading 'Paso 77 — plantilla DLP y prueba sintética regional'
 STATE="$ROOT/state/$DEMO_RUN_ID"
 CONTRACT="$ROOT/config/contracts/security_controls.json"
+RENDERED_CONTRACT="$STATE/security_controls.rendered.json"
+render_template "$CONTRACT" "$RENDERED_CONTRACT"
+CONTRACT="$RENDERED_CONTRACT"
 [[ -s "$STATE/security_secret_ok.txt" ]] || { echo 'SCRIPT 77: 0 — dependencia: SCRIPT 76'; exit 1; }
 TOKEN="$(gcloud auth print-access-token)"
 [[ -n "$TOKEN" ]] || { echo 'SCRIPT 77: 0 — no se obtuvo token de acceso'; exit 1; }
@@ -61,5 +64,5 @@ with open(result_file,'w',encoding='utf-8') as stream: json.dump(safe,stream,ens
 print(f'Plantilla DLP verificada; tipos detectados={sorted(types)}; contenido no persistido')
 PY
 printf 'template=%s\nlocation=%s\nsynthetic_inspection=verified\n' \
-  "$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["dlp"]["template_id"])' "$CONTRACT")" "$REGION" > "$STATE/security_dlp_ok.txt"
+  "$(contract_value "$CONTRACT" dlp.template_id)" "$REGION" > "$STATE/security_dlp_ok.txt"
 echo 'SCRIPT 77: 1 — plantilla DLP y detección sintética verificadas sin guardar quotes'

@@ -5,8 +5,8 @@ STATE="$ROOT/state/$DEMO_RUN_ID"
 CONTRACT="$ROOT/config/contracts/security_controls.json"
 [[ -s "$STATE/security_preflight_ok.txt" ]] || { echo 'SCRIPT 75: 0 — dependencia: SCRIPT 74'; exit 1; }
 PROJECT_NUMBER="$(sed -n 's/^project_number=//p' "$STATE/security_preflight_ok.txt")"
-KEYRING="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["kms"]["keyring"])' "$CONTRACT")"
-KEY="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["kms"]["key"])' "$CONTRACT")"
+KEYRING="$(contract_value "$CONTRACT" kms.keyring)"
+KEY="$(contract_value "$CONTRACT" kms.key)"
 AGENT="service-${PROJECT_NUMBER}@gcp-sa-secretmanager.iam.gserviceaccount.com"
 KEY_RESOURCE="projects/${PROJECT_ID}/locations/${REGION}/keyRings/${KEYRING}/cryptoKeys/${KEY}"
 

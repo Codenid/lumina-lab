@@ -94,7 +94,7 @@ UNAUTH='no observada'
   echo "Resultado funcional del paso 66: $API_RESULT; Cloud Run fue contrastado y las cuatro rutas se verificaron según la evidencia del intento."
 } > "$ROOT/state/$DEMO_RUN_ID/EVIDENCIA_API_RETAILSMART.md"
 
-REPORT="$ROOT/docs/RESULTADO_SCRIPTS_63_67.md"
+REPORT="$ROOT/state/$DEMO_RUN_ID/EVIDENCIA_API_RETAILSMART.md"
 {
   echo '# Resultado del grupo 63–67 — API RetailSmart Insights'; echo
   printf 'Fecha: %s\nProyecto: `%s`\nRegión: `%s`\nResultado del grupo: **%s**\n\n' "$(date +%Y-%m-%d)" "$PROJECT_ID" "$REGION" "$GROUP_RESULT"

@@ -6,10 +6,12 @@ CONTRACT="$ROOT/config/contracts/governance_catalog.json"
 [[ -s "$CONTRACT" ]] || { echo 'SCRIPT 70: 0 — falta contrato de gobierno/catálogo'; exit 1; }
 python3 -m json.tool "$CONTRACT" >/dev/null
 
-python3 - "$CONTRACT" "$PROJECT_ID" "$REGION" <<'PY'
+python3 - "$CONTRACT" "$PROJECT_ID" "$REGION" "$PREFIX" <<'PY'
 import json,sys
 c=json.load(open(sys.argv[1],encoding='utf-8'))
-if c.get('project')!=sys.argv[2] or c.get('location')!=sys.argv[3]:
+def render(value):
+    return value.replace('{{PROJECT_ID}}',sys.argv[2]).replace('{{REGION}}',sys.argv[3]).replace('{{PREFIX}}',sys.argv[4])
+if render(c.get('project',''))!=sys.argv[2] or render(c.get('location',''))!=sys.argv[3]:
     raise SystemExit('contrato de gobierno no coincide con proyecto/región configurados')
 if c.get('catalog',{}).get('overview_aspect')!='dataplex-types.global.overview':
     raise SystemExit('el contrato debe utilizar el aspecto reusable overview de Knowledge Catalog')
@@ -48,11 +50,7 @@ trap 'rm -rf "$TMP"' EXIT
 ASSETS_JSON="$STATE/governance_assets.json"
 : > "$TMP/assets.ndjson"
 for layer in bronze silver gold; do
-  dataset="$(python3 - "$CONTRACT" "$layer" <<'PY'
-import json,sys
-print(json.load(open(sys.argv[1],encoding='utf-8'))['datasets'][sys.argv[2]]['id'])
-PY
-)"
+  dataset="$(contract_value "$CONTRACT" "datasets.$layer.id")"
   DATASET_INFO="$TMP/${layer}_dataset.json"
   bq --project_id="$PROJECT_ID" show --format=prettyjson "$PROJECT_ID:$dataset" > "$DATASET_INFO"
   python3 - "$DATASET_INFO" "$dataset" "$REGION" <<'PY'
@@ -81,10 +79,11 @@ python3 - "$TMP/assets.ndjson" "$ASSETS_JSON" "$CONTRACT" <<'PY'
 import json,sys
 assets=[json.loads(line) for line in open(sys.argv[1],encoding='utf-8') if line.strip()]
 c=json.load(open(sys.argv[3],encoding='utf-8'))
+gold_dataset=c['datasets']['gold']['id'].replace('{{PREFIX}}', __import__('os').environ['PREFIX'])
 present={(a['dataset'],a['asset']) for a in assets}
 for pair in c['lineage']['pairs']:
     for name in (pair['source'],pair['target']):
-        if (c['datasets']['gold']['id'],name) not in present:
+        if (gold_dataset,name) not in present:
             raise SystemExit('falta el activo Gold requerido para linaje: '+name)
 json.dump(assets,open(sys.argv[2],'w',encoding='utf-8'),ensure_ascii=False,indent=2)
 print(f'Inventario de catálogo: {len(assets)} tablas/vistas; cuatro pares de linaje presentes')
@@ -93,11 +92,7 @@ PY
 TOKEN="$(gcloud auth print-access-token)"
 for sample in 'bronze eventos_raw' 'silver pedidos' 'gold cu03_kpis_operativos'; do
   read -r layer asset <<< "$sample"
-  dataset="$(python3 - "$CONTRACT" "$layer" <<'PY'
-import json,sys
-print(json.load(open(sys.argv[1],encoding='utf-8'))['datasets'][sys.argv[2]]['id'])
-PY
-)"
+  dataset="$(contract_value "$CONTRACT" "datasets.$layer.id")"
   ENTRY="projects/$PROJECT_ID/locations/$REGION/entryGroups/@bigquery/entries/bigquery.googleapis.com/projects/$PROJECT_ID/datasets/$dataset/tables/$asset"
   CODE="$(curl --silent --show-error --get --output "$TMP/catalog_${layer}.json" --write-out '%{http_code}' \
     --header "Authorization: Bearer $TOKEN" --header "x-goog-user-project: $PROJECT_ID" \

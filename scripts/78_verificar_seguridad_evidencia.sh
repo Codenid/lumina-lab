@@ -6,9 +6,12 @@ for marker in security_preflight_ok.txt security_kms_ok.txt security_secret_ok.t
   [[ -s "$STATE/$marker" ]] || { echo "SCRIPT 78: 0 — dependencia ausente: $marker"; exit 1; }
 done
 CONTRACT="$ROOT/config/contracts/security_controls.json"
-KEYRING="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["kms"]["keyring"])' "$CONTRACT")"
-KEY="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["kms"]["key"])' "$CONTRACT")"
-SECRET="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["secret"]["id"])' "$CONTRACT")"
+RENDERED_CONTRACT="$STATE/security_controls.rendered.json"
+render_template "$CONTRACT" "$RENDERED_CONTRACT"
+CONTRACT="$RENDERED_CONTRACT"
+KEYRING="$(contract_value "$CONTRACT" kms.keyring)"
+KEY="$(contract_value "$CONTRACT" kms.key)"
+SECRET="$(contract_value "$CONTRACT" secret.id)"
 SECRET_AGENT="$(sed -n 's/^secretmanager_agent=//p' "$STATE/security_kms_ok.txt")"
 
 gcloud kms keys describe "$KEY" --project="$PROJECT_ID" --location="$REGION" --keyring="$KEYRING" --format=json > "$STATE/security_key_final.json"
@@ -37,7 +40,7 @@ if not {'EMAIL_ADDRESS','CREDIT_CARD_NUMBER'}.issubset(types): raise SystemExit(
 print('KMS, CMEK Secret Manager, IAM por recurso y DLP verificados')
 PY
 
-REPORT="$ROOT/docs/RESULTADO_SCRIPTS_74_78.md"
+REPORT="$ROOT/state/$DEMO_RUN_ID/EVIDENCIA_SEGURIDAD.md"
 {
   echo '# Resultado del grupo 74–78 — Seguridad'; echo
   printf 'Proyecto: `%s`  \nRegión: `%s`  \nResultado: **COMPLETADO**\n\n' "$PROJECT_ID" "$REGION"
@@ -55,4 +58,4 @@ REPORT="$ROOT/docs/RESULTADO_SCRIPTS_74_78.md"
   echo; echo 'No se almacenaron secretos en el repositorio ni se imprimió el valor generado. La prueba DLP usó datos sintéticos y guardó únicamente tipos, likelihood y ubicación de hallazgos.'
 } > "$REPORT"
 printf '74=1\n75=1\n76=1\n77=1\n78=1\nresultado=COMPLETADO\n' > "$STATE/security_group_ok.txt"
-echo 'SCRIPT 78: 1 — grupo de seguridad verificado; evidencia en docs/RESULTADO_SCRIPTS_74_78.md'
+echo "SCRIPT 78: 1 — grupo de seguridad verificado; evidencia en state/$DEMO_RUN_ID/EVIDENCIA_SEGURIDAD.md"
