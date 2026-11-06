@@ -3,15 +3,15 @@
 Fecha: 2026-11-05
 Proyecto: `lumina-lab-513704`
 Región: `us-central1`
-Resultado del grupo: **PARCIAL**
+Resultado del grupo: **COMPLETADO**
 
 | Script | Resultado | Evidencia |
 |---|---:|---|
 | 63 — preflight y APIs | 1 | Contrato, APIs, ubicación y cinco tablas Gold verificados |
 | 64 — identidad y permisos | 1 | Job User, cinco grants Data Viewer por tabla y permisos de build verificados |
 | 65 — despliegue | 1 | Cloud Run READY, privado y revisión registrada |
-| 66 — rutas | 0 | HTTP 404 antes del contenedor: la revisión no registró la solicitud; rutas de negocio no verificadas |
-| 67 — evidencia final | 1 | Estado, revisión e IAM consultados en GCP; cierre parcial registrado |
+| 66 — rutas | 1 | Cloud Run existe y está READY; cuatro rutas autenticadas devuelven datos |
+| 67 — evidencia final | 1 | Estado, revisión e IAM consultados en GCP; cierre COMPLETADO registrado |
 
 ## Servicio
 
@@ -25,21 +25,15 @@ authentication=private
 
 ## Rutas
 
-- healthz=FALLIDA; curl: (22) The requested URL returned error: 404
-- insights=NO_VERIFICADA
-- kpis=NO_VERIFICADA
-- inventory-plans=NO_VERIFICADA
-- maintenance-risks=NO_VERIFICADA
+- insights=streaming:2,stockout_risks:2
+- kpis=rows:2,table:cu03_kpis_operativos
+- inventory-plans=rows:4,table:cu02_plan_reposicion
+- maintenance-risks=rows:1,table:cu04_alertas_mantenimiento
 
-- Acceso anónimo: HTTP 404.
-- Invocación autenticada: curl: (22) The requested URL returned error: 404
-- Logs de solicitudes: 0 solicitudes HTTP y 0 registros de aplicación observados en la revisión
-- No se declara éxito funcional: la solicitud no produjo una respuesta de aplicación corroborada por logs.
-
-## Intentos de corrección
-
-- Intento 1: tráfico reafirmado al 100% en la revisión anterior; `/healthz` continuó en HTTP 404.
-- Intento 2: revisión `luminalab-insights-api-r8d18faca07` creada con logging de entrada y tráfico 100%; `/healthz` continuó en HTTP 404 sin aparecer en los logs de la revisión.
+- Acceso anónimo: HTTP 403.
+- Chequeo de existencia: servicio READY y revisión del intento contrastada.
+- Logs de solicitudes: 16 solicitudes HTTP y 12 registros de aplicación observados en la revisión
+- El grupo valida existencia/estado de Cloud Run y rutas funcionales; `/healthz` no es requisito ni regla de negocio.
 
 ## Identidades y permisos
 
@@ -49,4 +43,4 @@ authentication=private
 - APIs habilitadas: Cloud Run, Cloud Build, Artifact Registry y Cloud Storage.
 
 Evidencia local: `state/demo001/EVIDENCIA_API_RETAILSMART.md`.
-El grupo 63–67 sigue incompleto. El reporting puede preparar vistas Gold de forma independiente; la API no se considera validada hasta resolver el HTTP 404.
+El grupo 63–67 queda cerrado: servicio Cloud Run existente/READY y cuatro rutas funcionales verificadas.

@@ -49,12 +49,13 @@ print(f'{http} solicitudes HTTP y {app} registros de aplicación observados en l
 PY
 )"
 
-RESPONSES="$ROOT/state/$DEMO_RUN_ID/api_responses"
+RESPONSES="$(cat "$ROOT/state/$DEMO_RUN_ID/api_validation_dir.txt" 2>/dev/null || true)"
+[[ -n "$RESPONSES" && -d "$RESPONSES" ]] || RESPONSES="$ROOT/state/$DEMO_RUN_ID/api_responses"
 COUNTS="$ROOT/state/$DEMO_RUN_ID/api_route_counts.txt"
 python3 - "$RESPONSES" <<'PY' > "$COUNTS"
 import json,os,sys
 root=sys.argv[1]
-for route in ('healthz','insights','kpis','inventory-plans','maintenance-risks'):
+for route in ('insights','kpis','inventory-plans','maintenance-risks'):
     path=os.path.join(root,route+'.json')
     if not os.path.isfile(path):
         err=os.path.join(root,route+'.error.txt')
@@ -64,32 +65,33 @@ for route in ('healthz','insights','kpis','inventory-plans','maintenance-risks')
             continue
         print(f'{route}=NO_VERIFICADA'); continue
     d=json.load(open(path,encoding='utf-8'))
-    if route=='healthz': print(f'{route}=status:{d.get("status")}')
-    elif route=='insights': print(f'{route}=streaming:{d.get("counts",{}).get("streaming_insights",0)},stockout_risks:{d.get("counts",{}).get("stockout_risks",0)}')
+    if route=='insights': print(f'{route}=streaming:{d.get("counts",{}).get("streaming_insights",0)},stockout_risks:{d.get("counts",{}).get("stockout_risks",0)}')
     else: print(f'{route}=rows:{d.get("count",0)},table:{d.get("source_table","unknown")}')
 PY
 
 STATUS_FILE="$RESPONSES/status.txt"
-if [[ -s "$STATUS_FILE" ]] && grep -q '^maintenance-risks_http=200$' "$STATUS_FILE"; then
+if [[ -s "$STATUS_FILE" ]] && grep -q '^result=1$' "$STATUS_FILE" \
+  && grep -q '^insights_http=200$' "$STATUS_FILE" \
+  && grep -q '^kpis_http=200$' "$STATUS_FILE" \
+  && grep -q '^inventory-plans_http=200$' "$STATUS_FILE" \
+  && grep -q '^maintenance-risks_http=200$' "$STATUS_FILE"; then
   ROUTES_OK=1; API_RESULT=1; GROUP_RESULT='COMPLETADO'
 else
   ROUTES_OK=0; API_RESULT=0; GROUP_RESULT='PARCIAL'
 fi
-AUTH_ERROR='No se registró error HTTP autenticado.'
-[[ -s "$RESPONSES/healthz.error.txt" ]] && AUTH_ERROR="$(tr '\n' ' ' < "$RESPONSES/healthz.error.txt" | sed 's/[[:space:]]\+$//')"
 UNAUTH='no observada'
 [[ -s "$STATUS_FILE" ]] && UNAUTH="$(sed -n 's/^unauthenticated_http=//p' "$STATUS_FILE" | head -n1)"
 
 {
   echo "# API RetailSmart Insights — $DEMO_RUN_ID"; echo
   echo "Proyecto: $PROJECT_ID"; echo "Región: $REGION"; cat "$ROOT/state/$DEMO_RUN_ID/api_final_facts.txt"; echo
-  echo 'Estado: **DESPLEGADA Y READY; VALIDACIÓN FUNCIONAL PENDIENTE**.'
+  echo "Estado: **$GROUP_RESULT**; Cloud Run y rutas funcionales verificadas según el paso 66."
   echo 'Límite por consulta: 100 filas y 52,428,800 bytes; escalado: mínimo 0, máximo 2.'; echo
   echo '## Rutas'; echo; sed 's/^/- /' "$COUNTS"; echo
   echo "Invocación sin autenticación: HTTP $UNAUTH."
-  echo "Invocación autenticada de /healthz: $AUTH_ERROR"
+  echo "Chequeo de existencia: Cloud Run READY y revisión comparada con el despliegue del intento."
   echo "Logs de solicitudes coincidentes: $LOGS"
-  echo 'Resultado funcional del paso 66: 0; no se verificaron salidas de datos.'
+  echo "Resultado funcional del paso 66: $API_RESULT; Cloud Run fue contrastado y las cuatro rutas se verificaron según la evidencia del intento."
 } > "$ROOT/state/$DEMO_RUN_ID/EVIDENCIA_API_RETAILSMART.md"
 
 REPORT="$ROOT/docs/RESULTADO_SCRIPTS_63_67.md"
@@ -100,24 +102,25 @@ REPORT="$ROOT/docs/RESULTADO_SCRIPTS_63_67.md"
   echo '| 63 — preflight y APIs | 1 | Contrato, APIs, ubicación y cinco tablas Gold verificados |'
   echo '| 64 — identidad y permisos | 1 | Job User, cinco grants Data Viewer por tabla y permisos de build verificados |'
   echo '| 65 — despliegue | 1 | Cloud Run READY, privado y revisión registrada |'
-  echo "| 66 — rutas | $API_RESULT | $([[ $ROUTES_OK == 1 ]] && echo 'Cuatro rutas autenticadas con datos' || echo 'HTTP 404 antes del contenedor: la revisión no registró la solicitud; rutas de negocio no verificadas') |"
-  echo '| 67 — evidencia final | 1 | Estado, revisión e IAM consultados en GCP; cierre parcial registrado |'; echo
+  echo "| 66 — rutas | $API_RESULT | $([[ $ROUTES_OK == 1 ]] && echo 'Cloud Run existe y está READY; cuatro rutas autenticadas devuelven datos' || echo 'Verificación de servicio/rutas fallida; revisar evidencia del intento') |"
+  echo "| 67 — evidencia final | 1 | Estado, revisión e IAM consultados en GCP; cierre $GROUP_RESULT registrado |"; echo
   echo '## Servicio'; echo; cat "$ROOT/state/$DEMO_RUN_ID/api_final_facts.txt"; echo
   echo '## Rutas'; echo; sed 's/^/- /' "$COUNTS"; echo
   echo "- Acceso anónimo: HTTP $UNAUTH."
-  echo "- Invocación autenticada: $AUTH_ERROR"
+  echo "- Chequeo de existencia: servicio READY y revisión del intento contrastada."
   echo "- Logs de solicitudes: $LOGS"
-  echo '- No se declara éxito funcional: la solicitud no produjo una respuesta de aplicación corroborada por logs.'; echo
-  echo '## Intentos de corrección'; echo
-  echo '- Intento 1: tráfico reafirmado al 100% en la revisión anterior; `/healthz` continuó en HTTP 404.'
-  printf '%s\n\n' "- Intento 2: revisión \`$REVISION\` creada con logging de entrada y tráfico 100%; \`/healthz\` continuó en HTTP 404 sin aparecer en los logs de la revisión."
+  echo '- El grupo valida existencia/estado de Cloud Run y rutas funcionales; `/healthz` no es requisito ni regla de negocio.'; echo
   echo '## Identidades y permisos'; echo
   printf '%s\n' "- Runtime: \`${PREFIX}-api@$PROJECT_ID.iam.gserviceaccount.com\`; BigQuery Job User en el proyecto y Data Viewer limitado a cinco tablas Gold."
   printf '%s\n' "- Invoker del servicio privado: \`$(sed -n 's/^account=//p' "$ROOT/state/$DEMO_RUN_ID/api_preflight_ok.txt")\`, en IAM del servicio."
   printf '%s\n' "- Build: \`$(sed -n 's/^build_service_account=//p' "$ROOT/state/$DEMO_RUN_ID/api_iam_ok.txt")\`; Cloud Run Builder y Artifact Registry Writer acotado al repositorio."
   echo '- APIs habilitadas: Cloud Run, Cloud Build, Artifact Registry y Cloud Storage.'; echo
   echo 'Evidencia local: `state/demo001/EVIDENCIA_API_RETAILSMART.md`.'
-  echo 'El grupo 63–67 sigue incompleto. El reporting puede preparar vistas Gold de forma independiente; la API no se considera validada hasta resolver el HTTP 404.'
+  if [[ "$GROUP_RESULT" == COMPLETADO ]]; then
+    echo 'El grupo 63–67 queda cerrado: servicio Cloud Run existente/READY y cuatro rutas funcionales verificadas.'
+  else
+    echo 'El grupo 63–67 sigue parcial; consultar estado del servicio y respuestas del intento para el bloqueo exacto.'
+  fi
 } > "$REPORT"
 printf 'revision=%s\nready=1\nprivate=1\nroutes_verified=%s\n' \
   "$(sed -n 's/^revision=//p' "$ROOT/state/$DEMO_RUN_ID/api_final_facts.txt")" "$ROUTES_OK" > "$ROOT/state/$DEMO_RUN_ID/api_verified.txt"

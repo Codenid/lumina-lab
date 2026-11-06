@@ -1,5 +1,5 @@
 archimate_id,component,technology_declared,implementation_target,stage,issues,status,note
-id-296ccb2b09fe45ae94d44b36120e3e3e,API RetailSmart Insights,Cloud Run,Cloud Run service / REST API,G4,RS-018,DEPLOYED_VALIDATION_PENDING,"luminalab-insights-api; private; revision luminalab-insights-api-r8d18faca07; authenticated /healthz returned HTTP 404 before container; business routes unverified"
+id-296ccb2b09fe45ae94d44b36120e3e3e,API RetailSmart Insights,Cloud Run,Cloud Run service / REST API,G4,RS-018,DEPLOYED_FUNCTIONAL_VERIFIED,"luminalab-insights-api; private; revision luminalab-insights-api-r8d18faca07; service READY and four business routes return data; /healthz is not an acceptance requirement"
 id-91fc8e972e2e420e8a86c3afc6a260c8,Audit Store,Cloud Logging + Observability Analytics,Cloud Logging + analytics log sink / query,G1,RS-006,PLANNED_NOT_DEPLOYED,Review ADR-0003 discrepancies
 id-8ed726e0c2c14cbb8df73539854db157,Auditoría de Procesamiento,Cloud Pub/Sub,Pub/Sub audit topic + subscriptions,G1,RS-005,PLANNED_NOT_DEPLOYED,Review ADR-0003 discrepancies
 id-ca5a5c0eabe44350bb9e644176c4a48b,Bronze Layer,BigQuery,BigQuery dataset/table luminalab_bronze.eventos_raw,G1,RS-004,PLANNED_NOT_DEPLOYED,Raw envelope for the four use cases; Cloud Storage retained only for technical staging

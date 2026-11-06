@@ -17,9 +17,9 @@ instancia Looker en el proyecto. Se deshabilitó `looker.googleapis.com` y se
 verificó que quedó apagada; las vistas BigQuery se conservan como datos listos
 para una futura aplicación externa de consumo.
 
-El siguiente grupo secuencial pendiente sigue siendo 63–67, que permanece
-parcial por el HTTP 404 de Cloud Run. El grupo 70–73 queda como siguiente grupo
-posterior de gobierno y catálogo.
+El grupo 63–67 ya está cerrado: Cloud Run quedó verificado como READY y las
+cuatro rutas funcionales respondieron con datos. El siguiente grupo pendiente
+es 70–73, de gobierno y catálogo.
 
 ## Recomendación opcional futura
 
