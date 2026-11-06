@@ -4,7 +4,7 @@ id-91fc8e972e2e420e8a86c3afc6a260c8,Audit Store,Cloud Logging + Observability An
 id-8ed726e0c2c14cbb8df73539854db157,Auditoría de Procesamiento,Cloud Pub/Sub,Pub/Sub audit topic + subscriptions,G1,RS-005,PLANNED_NOT_DEPLOYED,Review ADR-0003 discrepancies
 id-ca5a5c0eabe44350bb9e644176c4a48b,Bronze Layer,BigQuery,BigQuery dataset/table luminalab_bronze.eventos_raw,G1,RS-004,PLANNED_NOT_DEPLOYED,Raw envelope for the four use cases; Cloud Storage retained only for technical staging
 id-b873b655d9394c5cb6d286a02b8f5de1,Entrenamiento Forecast,Dataproc,Dataproc PySpark job (ephemeral compute),G1/G3,"RS-006,RS-016",PLANNED_NOT_DEPLOYED,
-id-5045ee70d35a4b9ca87e033bd486cbce,Gobierno Datos,Knowledge Catalog,Knowledge Catalog / metadata and lineage,G1/G6,"RS-006,RS-021",PLANNED_NOT_DEPLOYED,
+id-5045ee70d35a4b9ca87e033bd486cbce,Gobierno Datos,Knowledge Catalog,Knowledge Catalog / metadata and lineage,G1/G6,"RS-006,RS-021",DEPLOYED_VERIFIED,"44 Bronze/Silver/Gold assets cataloged with overview metadata; automatic lineage enabled; four Gold source-to-view links verified"
 id-b1194951ccb7415e9a6e977fd52c2789,Gold Insights Retail,BigQuery,BigQuery dataset/table (Gold insights),G1/G2,"RS-006,RS-011",PLANNED_NOT_DEPLOYED,
 id-2f1d2779d6464c1383e5fbf375aab325,Gold Operational Mart,BigQuery,BigQuery dataset/table (OLAP),G1/G4,"RS-006,RS-017",PLANNED_NOT_DEPLOYED,
 id-5a8ed19fd6f54f95904579b84f6473f4,Herramienta de Reporting Operativo,Looker,BigQuery Gold reporting views; optional external consumer application,G1/G4,"RS-006,RS-018",VIEWS_READY_CONSUMER_OPTIONAL,"Looker excluded from implementation; API disabled; future demo consumer is outside current runbook"

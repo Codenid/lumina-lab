@@ -24,9 +24,19 @@ Región: `us-central1`
 | 36–42 | Forecast baseline, scoring y planificación CU02 | 1 |
 | 90 | Eliminación del clúster Dataproc | 1 |
 
-## Siguiente grupo pendiente
+## Grupo 70–73 — Gobierno y catálogo (RS-021)
 
-El siguiente grupo pendiente es **70–73: Gobierno y catálogo (RS-021)**.
+Resultado actual: **COMPLETADO**. Scripts 70–73 ejecutados y verificados en GCP.
+Data Lineage confirmó los cuatro vínculos Gold; evidencia:
+`docs/RESULTADO_SCRIPTS_70_73.md`.
+
+| Script | Estado | Evidencia |
+|---|---:|---|
+| 70 | 1 | 44 activos BigQuery y entradas de Knowledge Catalog confirmados |
+| 71 | 1 | APIs habilitadas; `roles/dataplex.serviceAgent` aplicado al agente Dataplex |
+| 72 | 1 | Aspect `overview` publicado y verificado en 44 activos |
+| 73 | 1 | Data Lineage confirmó 4/4 vínculos source→vista; se reutilizó el linaje propagado. |
+
 El Operational Mart ya integra las seis fuentes batch y las dos fuentes streaming.
 
 | Scripts propuestos | Objetivo | Estado |
@@ -47,7 +57,7 @@ El Operational Mart ya integra las seis fuentes batch y las dos fuentes streamin
 | Operational Mart productivo | 59–62 | Integrar continuamente streaming y batch RS-017. | 1 |
 | API | 63–67 | Cloud Run READY y privado; cuatro rutas funcionales responden con datos; `/healthz` no es requisito. | 1 |
 | Vistas para reporting | 68–69 | Cuatro vistas BigQuery Gold verificadas; aplicación consumidora fuera del alcance actual. | 1 |
-| Gobierno | 70–73 | Dataplex/Knowledge Catalog, metadatos y linaje RS-021. | PENDIENTE |
+| Gobierno | 70–73 | 44 activos catalogados, metadatos por capa y cuatro vínculos de linaje verificados. | 1 |
 | Seguridad | 74–78 | KMS, DLP, secretos y controles refinados RS-022. | PENDIENTE |
 | Auditoría y observabilidad | 79–83 | Audit Store, métricas, alertas y SLOs. | PENDIENTE |
 
@@ -119,7 +129,8 @@ funcional consulta las cuatro rutas de negocio. Evidencia:
 El grupo queda cerrado dentro del alcance acordado: Looker sale de la
 implementación y su API está deshabilitada. Las vistas quedan listas para una
 aplicación externa opcional futura. Evidencia: `docs/RESULTADO_SCRIPTS_68_69.md`.
-El siguiente grupo secuencial pendiente es **70–73 — gobierno y catálogo**.
+El grupo 70–73 está completado. El siguiente grupo secuencial es
+**74–78 — seguridad**.
 
 ## Recomendación opcional posterior a todos los grupos
 

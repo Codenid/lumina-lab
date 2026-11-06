@@ -10,7 +10,8 @@ independiente; carga manual de Silver a BigQuery Gold. Incluye creación opciona
 de Workflows, Dataproc y definición de Storage Transfer. No es la implementación
 completa de los 23 issues ni de todas las funciones de la vista 08. Consulta
 `docs/ALCANCE.md`: Cloud Run ya está desplegado y sus cuatro rutas funcionales
-fueron verificadas; catálogo, forecast y orquestación completa siguen pendientes.
+fueron verificadas. Gobierno 70–73 está completo: catálogo y metadatos se
+verificaron en 44 activos y Data Lineage confirmó los cuatro vínculos Gold.
 Looker queda fuera del alcance y solo como recomendación
 futura para una aplicación externa de consumo. Un entorno creado no significa
 un caso de negocio terminado.
