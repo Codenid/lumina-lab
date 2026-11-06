@@ -2,63 +2,72 @@
 \usepackage[utf8]{inputenc}
 \usepackage[spanish]{babel}
 \usepackage[a4paper,margin=2.2cm]{geometry}
-\usepackage{booktabs,longtable,graphicx,hyperref,svg}
+\usepackage{booktabs,longtable,graphicx,hyperref,svg,array}
+\newcommand{\evidencia}[2]{\noindent\fbox{\parbox{.94\textwidth}{\textbf{Evidencia pendiente:} #1\\\texttt{#2}}}\par\medskip}
 \title{Informe técnico de implementación GCP\\Lumina Retail}
 \author{Equipo de implementación}
 \date{\today}
 \begin{document}
 \maketitle
 
-\section{Resumen técnico}
-Se implementó una plataforma de datos en Google Cloud para ingesta streaming y batch, capas Bronze, Silver y Gold en BigQuery, productos analíticos, API privada, gobierno, seguridad, auditoría y observabilidad. La instalación es reproducible mediante \texttt{config.env} y el runbook 00--83.
+\section{Propósito}
+Este documento describe la implementación interna de Lumina Retail en Google Cloud: ingesta, capas medallón, productos Gold, consumo y controles. Cada capacidad declara servicio, datos, configuración mínima y evidencia de aceptación. Los productores, consumidores externos y Looker se mantienen fuera de alcance.
 
-\section{Alcance y frontera}
-Los productores externos y consumidores externos no se provisionan. La plataforma entrega vistas Gold y una API privada. Looker queda fuera de alcance; un tópico de salida para integración externa requerirá un contrato posterior.
-\begin{center}\includesvg[width=.88\textwidth]{../assets/figuras/01-frontera-plataforma}\end{center}
-
-\section{Arquitectura implementada}
+\section{Arquitectura de referencia}
 \begin{center}
 \includesvg[width=\textwidth]{../assets/arquitectura/arquitectura-archimate}
 \end{center}
+Los recorridos incrementales se exportarán desde ArchiMate; no se incluyen ilustraciones sintéticas.
+\evidencia{SVG de fundación y medallón}{../assets/arquitectura/flujo-01-fundacion-medallion.svg}
 
-\begin{longtable}{p{.27\textwidth}p{.22\textwidth}p{.43\textwidth}}
-\toprule Capacidad & Servicio GCP & Implementación \\ \midrule
-Ingesta streaming & Pub/Sub + Dataflow & Tópicos, suscripciones y pipelines Apache Beam. \\
-Ingesta batch & Cloud Storage + Storage Transfer & Landing técnico y transferencia controlada. \\
-Medallón & BigQuery & Datasets Bronze, Silver y Gold. \\
-Procesamiento batch & Workflows + Dataproc & Orquestación y cómputo efímero. \\
-Consumo & Cloud Run + Views & API privada y vistas Gold. \\
-Controles & IAM, KMS, DLP, Logging, Monitoring y Dataplex & Seguridad, gobierno y operación. \\
+\section{Fundación y contrato de entrada}
+Cloud Storage recibe archivos batch y conserva staging y artefactos. Bronze, Silver y Gold son datasets BigQuery: Bronze preserva raw y metadatos; Silver normaliza entidades; Gold publica productos y vistas.
+
+\begin{longtable}{p{.23\textwidth}p{.27\textwidth}p{.40\textwidth}}
+\toprule Capa & Servicio & Resultado \\ \midrule
+Landing & Cloud Storage & objeto fuente identificado por URI \\
+Bronze & BigQuery & envelope, payload raw y metadatos de ingestión \\
+Silver & BigQuery & entidad tipada y estado de calidad \\
+Gold & BigQuery & casos de uso, Mart, predicciones y vistas \\
 \bottomrule
 \end{longtable}
 
-\section{Modelo medallón}
-Landing conserva archivos batch y artefactos técnicos. Bronze registra payloads raw y metadatos de ingestión en BigQuery. Silver contiene datos normalizados y validados. Gold materializa productos de negocio, el Operational Mart y vistas de reporting.
-\begin{center}\includesvg[width=.94\textwidth]{../assets/figuras/02-fundacion-medallion}\end{center}
+El envelope streaming usa \texttt{schema\_version}, \texttt{simulation\_id}, \texttt{scenario\_id}, \texttt{producer\_id}, \texttt{event\_type}, \texttt{event\_id}, tiempos de negocio/publicación, \texttt{trace\_id} y payload. \texttt{event\_id} permite correlacionar Pub/Sub, Bronze, Silver, Insights y auditoría.
+\evidencia{Captura de buckets técnicos}{../assets/evidencia/01-fundacion/02-storage-buckets.png}
+\evidencia{Captura de datasets y tablas medallón}{../assets/evidencia/01-fundacion/03-bigquery-medallion.png}
 
-\section{Flujo streaming}
-Pub/Sub desacopla al productor del procesamiento. Una suscripción conserva el evento raw en Bronze y otra entrega el evento a Dataflow. Dataflow valida y normaliza antes de escribir Silver; BigQuery materializa Gold. Los jobs de demostración utilizan un worker, no autoscaling y se cancelan al terminar.
-\begin{center}\includesvg[width=.94\textwidth]{../assets/figuras/03-ingesta-streaming}\end{center}
+\section{Recorrido streaming}
+El tópico de entrada entrega una copia a la suscripción BigQuery para Bronze y otra a la suscripción pull de Dataflow. Apache Beam valida el envelope y escribe Silver.pedidos para eventos de pedido. El criterio de aceptación es el mismo \texttt{event\_id} en Bronze y la entidad Silver correlacionada; un job RUNNING no basta. La demostración usa un worker, sin autoscaling y termina en estado CANCELLED.
+\evidencia{SVG ArchiMate del recorrido streaming}{../assets/arquitectura/flujo-02-streaming-pedidos.svg}
+\evidencia{Tópico y suscripciones Pub/Sub}{../assets/evidencia/02-streaming/01-pubsub-topico-suscripciones.png}
+\evidencia{Job Dataflow y correlación Bronze/Silver}{../assets/evidencia/02-streaming/02-dataflow-job.png y ../assets/evidencia/02-streaming/03-bq-bronze-silver-evento.png}
 
-\section{Flujo batch y forecast}
-Los archivos ingresan en Landing, se cargan a Bronze, se curan en Silver y se materializan en Gold. Workflows coordina Bronze--Silver--Gold--Mart y Dataproc aporta cómputo batch efímero. El forecast guarda features, predicciones y plan en Gold; el artefacto de modelo se conserva en Cloud Storage.
-\begin{center}\includesvg[width=.94\textwidth]{../assets/figuras/05-ingesta-batch}\end{center}
-\begin{center}\includesvg[width=.94\textwidth]{../assets/figuras/06-forecast-planificacion}\end{center}
+\section{Insights y auditoría}
+El tópico de Insights alimenta un pipeline Dataflow que escribe \texttt{insights\_streaming} y \texttt{procesamiento\_auditoria}. Ambos productos Gold conservan \texttt{event\_id}; la validación exige una fila correlacionada en ambas tablas.
+\evidencia{SVG ArchiMate de Insights y auditoría}{../assets/arquitectura/flujo-03-insights-auditoria.svg}
+\evidencia{Consulta correlacionada por event\_id}{../assets/evidencia/03-insights/01-bq-insights-auditoria.png}
 
-\section{Productos y consumo}
-Los productos Gold cubren riesgo de quiebre, reposición, KPIs operativos y alertas de mantenimiento. Cloud Run expone una API privada para Insights, KPIs, planes de inventario y riesgos; Cloud Run IAM protege el acceso.
-\begin{center}\includesvg[width=.88\textwidth]{../assets/figuras/07-api-reporting}\end{center}
+\section{Recorrido batch y forecast}
+Los archivos llegan a Landing, se cargan a Bronze, se curan en Silver y se materializan en Gold y Operational Mart. Workflows coordina el recorrido; Storage Transfer registra la transferencia cuando aplica. Dataproc/Spark es cómputo efímero de demostración con autoeliminación.
 
-\section{Gobierno, seguridad y operación}
-Dataplex y Data Lineage catalogan y relacionan activos. IAM limita permisos por recurso; KMS, Secret Manager con CMEK y DLP protegen datos y secretos. Cloud Logging alimenta Audit Store; Monitoring define métrica, alerta y SLO de la API.
-\begin{center}\includesvg[width=.88\textwidth]{../assets/figuras/08-gobierno-seguridad-observabilidad}\end{center}
+El baseline de forecast calcula features, predicciones y el plan CU02. Features y predicciones viven en Gold; el artefacto \texttt{model.json} se conserva en Models.
+\evidencia{SVG ArchiMate batch y orquestación}{../assets/arquitectura/flujo-04-batch-orquestacion.svg}
+\evidencia{Transferencia, Workflow y Mart}{../assets/evidencia/04-batch/01-landing-transfer.png, 02-workflow-execution.png y 03-bq-batch-mart.png}
+\evidencia{SVG y evidencia del forecast}{../assets/arquitectura/flujo-05-forecast-reposicion.svg y ../assets/evidencia/05-forecast/01-features-predicciones-plan.png}
 
-\section{Instalación}
-El equipo debe contar con proyecto, facturación, red, cuotas y permisos. Debe configurar \texttt{config.env}, ejecutar el preflight y seguir \texttt{automatizacion/configuracion/runbook.json}. Cada prueba usa un \texttt{DEMO\_RUN\_ID} nuevo.
+\section{Productos Gold y consumo}
+Los productos Gold cubren riesgo de quiebre (CU01), reposición (CU02), KPIs operativos (CU03), mantenimiento (CU04) y Operational Mart. Las vistas de reporting preparan el consumo analítico.
 
-\section{Evidencia gráfica}
-Las capturas reales de Cloud Storage, BigQuery, Pub/Sub/Dataflow, Workflows/Dataproc, Cloud Run y controles transversales se incorporarán desde \texttt{../assets/evidencia/}. No se incluyen imágenes simuladas.
+Cloud Run publica una API privada con IAM, cero instancias mínimas, dos máximas y límite de cien filas. Sus rutas consultan Insights/CU01, CU03, CU02 y CU04.
+\evidencia{SVG ArchiMate de consumo}{../assets/arquitectura/flujo-06-gold-api-reporting.svg}
+\evidencia{Cloud Run, rutas autenticadas y vistas}{../assets/evidencia/06-consumo/01-cloud-run-servicio.png, 02-api-rutas.png y 03-bigquery-vistas.png}
 
-\section{Siguientes pasos}
-Integrar productores reales, acordar SLA y frecuencia, definir presupuesto y retención, evaluar un tópico de salida y construir el consumidor externo o BI.
+\section{Controles transversales}
+Dataplex y Data Lineage soportan catálogo y vínculos Gold--vistas. IAM limita identidades por recurso. KMS, Secret Manager con CMEK y DLP cubren cifrado, secretos y detección. Logging alimenta Audit Store; Monitoring implementa métrica, alerta y SLO de disponibilidad de la API.
+\evidencia{SVG ArchiMate de controles}{../assets/arquitectura/flujo-07-controles-transversales.svg}
+\evidencia{Gobierno, seguridad, auditoría y operación}{../assets/evidencia/07-controles/01-gobierno-seguridad.png y 02-auditoria-observabilidad.png}
+
+\section{Operación reproducible}
+Copiar \texttt{config.env.example} a \texttt{config.env}, completar proyecto, región, red, prefijo y ejecución. Ejecutar \texttt{bash automatizacion/scripts/00\_runbook.sh} y continuar en el orden de \texttt{automatizacion/configuracion/runbook.json}. Conservar IDs de jobs y ejecuciones, valores de correlación y estados terminales. El script 90 queda fuera de la secuencia porque elimina cómputo opcional.
+
 \end{document}
