@@ -2,7 +2,7 @@
 source "$(dirname "$0")/common.sh"
 heading 'Paso 54 — preflight batch de seis fuentes'
 CONTRACT="$ROOT/config/contracts/batch_sources.json"
-python3 - "$CONTRACT" "$ROOT/docs/view08-producers.csv" <<'PY'
+python3 - "$CONTRACT" "$ROOT/docs/arquitectura/productores.csv" <<'PY'
 import csv,json,sys
 c=json.load(open(sys.argv[1],encoding='utf-8'))
 expected={'pedidos','inventario','entregas','benchmark_competidores','eventos_locales','redes_sociales'}

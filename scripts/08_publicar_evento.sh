@@ -9,7 +9,7 @@ python3 - <<'EVENT'
 import datetime,json,os,pathlib,sys
 root=pathlib.Path(os.environ['ROOT']);sys.path.insert(0,str(root/'python'))
 from contract import normalize,canonical
-x=json.loads((root/'docs/contrato_original.json').read_text())
+x=json.loads((root/'docs/arquitectura/contrato-evento-original.json').read_text())
 x['event_id']='evt-'+os.environ['DEMO_RUN_ID'];x['simulation_id']='sim-'+os.environ['DEMO_RUN_ID']
 x['trace_id']='trace-'+os.environ['DEMO_RUN_ID']
 x['occurred_at']=x['emitted_at']=datetime.datetime.now(datetime.timezone.utc).isoformat()

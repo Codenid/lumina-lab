@@ -1,0 +1,64 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage{booktabs,longtable,graphicx,hyperref,svg}
+\title{Informe técnico de implementación GCP\\Lumina Retail}
+\author{Equipo de implementación}
+\date{\today}
+\begin{document}
+\maketitle
+
+\section{Resumen técnico}
+Se implementó una plataforma de datos en Google Cloud para ingesta streaming y batch, capas Bronze, Silver y Gold en BigQuery, productos analíticos, API privada, gobierno, seguridad, auditoría y observabilidad. La instalación es reproducible mediante \texttt{config.env} y el runbook 00--83.
+
+\section{Alcance y frontera}
+Los productores externos y consumidores externos no se provisionan. La plataforma entrega vistas Gold y una API privada. Looker queda fuera de alcance; un tópico de salida para integración externa requerirá un contrato posterior.
+\begin{center}\includesvg[width=.88\textwidth]{../assets/figuras/01-frontera-plataforma}\end{center}
+
+\section{Arquitectura implementada}
+\begin{center}
+\includesvg[width=\textwidth]{../assets/arquitectura/arquitectura-archimate}
+\end{center}
+
+\begin{longtable}{p{.27\textwidth}p{.22\textwidth}p{.43\textwidth}}
+\toprule Capacidad & Servicio GCP & Implementación \\ \midrule
+Ingesta streaming & Pub/Sub + Dataflow & Tópicos, suscripciones y pipelines Apache Beam. \\
+Ingesta batch & Cloud Storage + Storage Transfer & Landing técnico y transferencia controlada. \\
+Medallón & BigQuery & Datasets Bronze, Silver y Gold. \\
+Procesamiento batch & Workflows + Dataproc & Orquestación y cómputo efímero. \\
+Consumo & Cloud Run + Views & API privada y vistas Gold. \\
+Controles & IAM, KMS, DLP, Logging, Monitoring y Dataplex & Seguridad, gobierno y operación. \\
+\bottomrule
+\end{longtable}
+
+\section{Modelo medallón}
+Landing conserva archivos batch y artefactos técnicos. Bronze registra payloads raw y metadatos de ingestión en BigQuery. Silver contiene datos normalizados y validados. Gold materializa productos de negocio, el Operational Mart y vistas de reporting.
+\begin{center}\includesvg[width=.94\textwidth]{../assets/figuras/02-fundacion-medallion}\end{center}
+
+\section{Flujo streaming}
+Pub/Sub desacopla al productor del procesamiento. Una suscripción conserva el evento raw en Bronze y otra entrega el evento a Dataflow. Dataflow valida y normaliza antes de escribir Silver; BigQuery materializa Gold. Los jobs de demostración utilizan un worker, no autoscaling y se cancelan al terminar.
+\begin{center}\includesvg[width=.94\textwidth]{../assets/figuras/03-ingesta-streaming}\end{center}
+
+\section{Flujo batch y forecast}
+Los archivos ingresan en Landing, se cargan a Bronze, se curan en Silver y se materializan en Gold. Workflows coordina Bronze--Silver--Gold--Mart y Dataproc aporta cómputo batch efímero. El forecast guarda features, predicciones y plan en Gold; el artefacto de modelo se conserva en Cloud Storage.
+\begin{center}\includesvg[width=.94\textwidth]{../assets/figuras/05-ingesta-batch}\end{center}
+\begin{center}\includesvg[width=.94\textwidth]{../assets/figuras/06-forecast-planificacion}\end{center}
+
+\section{Productos y consumo}
+Los productos Gold cubren riesgo de quiebre, reposición, KPIs operativos y alertas de mantenimiento. Cloud Run expone una API privada para Insights, KPIs, planes de inventario y riesgos; Cloud Run IAM protege el acceso.
+\begin{center}\includesvg[width=.88\textwidth]{../assets/figuras/07-api-reporting}\end{center}
+
+\section{Gobierno, seguridad y operación}
+Dataplex y Data Lineage catalogan y relacionan activos. IAM limita permisos por recurso; KMS, Secret Manager con CMEK y DLP protegen datos y secretos. Cloud Logging alimenta Audit Store; Monitoring define métrica, alerta y SLO de la API.
+\begin{center}\includesvg[width=.88\textwidth]{../assets/figuras/08-gobierno-seguridad-observabilidad}\end{center}
+
+\section{Instalación}
+El equipo debe contar con proyecto, facturación, red, cuotas y permisos. Debe configurar \texttt{config.env}, ejecutar el preflight y seguir \texttt{config/runbook.json}. Cada prueba usa un \texttt{DEMO\_RUN\_ID} nuevo.
+
+\section{Evidencia gráfica}
+Las capturas reales de Cloud Storage, BigQuery, Pub/Sub/Dataflow, Workflows/Dataproc, Cloud Run y controles transversales se incorporarán desde \texttt{../assets/evidencia/}. No se incluyen imágenes simuladas.
+
+\section{Siguientes pasos}
+Integrar productores reales, acordar SLA y frecuencia, definir presupuesto y retención, evaluar un tópico de salida y construir el consumidor externo o BI.
+\end{document}

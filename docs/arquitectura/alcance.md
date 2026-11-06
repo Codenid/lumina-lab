@@ -2,7 +2,7 @@
 
 Este repositorio entrega una implementación reproducible de la plataforma
 interna descrita en ArchiMate. El inventario de origen se conserva en
-`view08-gcp-mapping.csv` y los productores en `view08-producers.csv`.
+`mapeo-archimate-gcp.csv` y los productores en `productores.csv`.
 
 ## Componentes cubiertos por scripts
 

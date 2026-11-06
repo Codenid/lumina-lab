@@ -7,7 +7,7 @@ from contract import normalize,canonical
 from ensure import check,main
 
 class BaselineTest(unittest.TestCase):
- def fixture(self):return json.loads((ROOT/'docs/contrato_original.json').read_text())
+ def fixture(self):return json.loads((ROOT/'docs/arquitectura/contrato-evento-original.json').read_text())
  def test_contrato_real(self):
   x=self.fixture();self.assertEqual(normalize(json.dumps(x)),x)
  def test_rechaza_campo_faltante(self):
