@@ -17,7 +17,7 @@
 11. [Validación end-to-end y resultados](#11-validacion-endtoend-y-resultados)
 12. [Conclusiones y hoja de evolución](#12-conclusiones-y-hoja-de-evolucion)
 
-**Anexos:** [A. Inventario GCP](#anexo-a-inventario-de-recursos-gcp) · [B. Contratos Pub/Sub](#anexo-b-contratos-pubsub) · [C. Contratos API](#anexo-c-contratos-api) · [D. Diccionario de datos](#anexo-d-diccionario-de-datos) · [E. Metadatos y linaje](#anexo-e-metadatos-y-linaje) · [F. Contratos batch](#anexo-f-contratos-batch) · [G. Productos Gold](#anexo-g-productos-analiticos-gold) · [H. Seguridad y operación](#anexo-h-seguridad-y-operacion) · [I. Pruebas y evidencias](#anexo-i-pruebas-y-evidencias) · [J. Referencias](#anexo-j-referencias-y-artefactos).
+**Anexos:** [A. Interfaces y recursos](#anexo-a-inventario-de-interfaces-y-recursos) · [B. Eventos y mensajería](#anexo-b-contratos-de-eventos-y-mensajeria) · [C. API REST](#anexo-c-contratos-rest-de-consumo) · [D. Diccionario físico](#anexo-d-diccionario-fisico-de-datos) · [E. Batch](#anexo-e-contratos-de-archivos-y-procesamiento-batch) · [F. Transformaciones](#anexo-f-mapeo-de-transformaciones-y-reglas-de-calidad) · [G. Productos Gold](#anexo-g-contratos-de-productos-analiticos-gold) · [H. Metadatos y linaje](#anexo-h-metadatos-linaje-y-controles-operativos) · [I. Pruebas](#anexo-i-pruebas-de-contrato-e-integracion) · [J. Referencias](#anexo-j-referencias-tecnicas-y-fuentes-de-verdad).
 
 
 ---
@@ -117,7 +117,18 @@ La implementación utiliza **exclusivamente conjuntos de datos y eventos ad hoc 
 
 ### Contrato lógico de evento
 
-`schema_version`, `simulation_id`, `scenario_id`, `producer_id`, `source_system`, `event_type`, `event_id`, `occurred_at`, `emitted_at`, `trace_id` y `payload` conforman el envelope documentado. La validación física de tipo, obligatoriedad y compatibilidad depende del contrato versionado por productor; ver anexo B.
+El generador publica un mensaje JSON con el siguiente contrato de referencia, definido en `docs/arquitectura/contrato-evento-original.json`:
+
+| Campo de entrada | Tipo | Propósito | Ejemplo del contrato |
+|---|---|---|---|
+| `schema_version` | string | versión del esquema | `1.0.0` |
+| `simulation_id` / `scenario_id` | string | correlación de simulación y escenario | `sim-20261103-001` / `black-friday` |
+| `producer_id` / `event_type` | string | productor y tipo de evento | `channel-apps` / `order_created` |
+| `event_id` / `trace_id` | string | identidad y seguimiento | `evt-000001` / `trace-order-000001` |
+| `occurred_at` / `emitted_at` | string ISO 8601 | tiempos de negocio y emisión | `2026-11-03T10:00:00Z` |
+| `payload` | objeto JSON | atributos del pedido | `order_id, customer_id, store_id, product_id, quantity` |
+
+**Salida contractual:** Pub/Sub distribuye el mensaje a los destinos de persistencia raw y procesamiento. El contrato original utiliza `payload.product_id`; el modelo batch Silver utiliza `sku_id`. Esta correspondencia requiere transformación explícita y no se presupone. El contrato íntegro y sus tipos se documentan en el anexo B.
 
 ### Medallion físico
 
@@ -128,7 +139,15 @@ La implementación utiliza **exclusivamente conjuntos de datos y eventos ad hoc 
 | Silver | BigQuery | entidades tipadas, normalizadas, con calidad |
 | Gold | BigQuery | CU01–CU04, predicciones, Mart y vistas |
 
-**Metadatos mínimos:** identificador de evento/lote, origen, tiempos de negocio e ingesta, versión de esquema, estado de calidad y referencia de ejecución. El diccionario físico debe derivarse de DDL y consultas reales, no de ejemplos narrativos.
+### Contrato de metadatos por modalidad
+
+| Modalidad | Identificador de entrada | Metadatos conservados | Destino |
+|---|---|---|---|
+| Streaming | `event_id`, `trace_id` | `message_id`, `publish_time`, `subscription_name`, `attributes` | BigQuery Bronze raw |
+| Batch | `batch_id`, `file_id`, `source_row_number` | `source_file_uri`, `source_system`, `ingested_at`, `record_hash`, `is_valid`, `error_reason` | BigQuery Bronze `*_raw` |
+| Curación | clave de negocio del dominio | campos tipados y `quality_status` | BigQuery Silver |
+
+El diccionario físico completo se mantiene en el anexo D.
 
 **Figura EV-DAT-01 — Buckets de Landing y artefactos**
 
@@ -164,7 +183,12 @@ La publicación se entrega a tres suscripciones independientes: una exporta el r
 
 **Prueba funcional mínima:** publicar un evento único; consultar Bronze y Silver filtrando por el mismo `event_id`; verificar `order_id`, calidad y campos normalizados; conservar el ID del job y su cierre. Los duplicados y eventos tardíos requieren criterios explícitos de idempotencia y vigencia.
 
-### Insights y auditoría
+### Contrato de salida de Insights y auditoría
+
+| Producto Gold | Entrada | Campos de salida | Clave de correlación |
+|---|---|---|---|
+| `insights_streaming` | eventos del pipeline de Insights | `insight_id`, `event_id`, `insight_type`, `sku_id`, `store_id`, `score`, `created_at`, `status` | `event_id` |
+| `procesamiento_auditoria` | procesamiento de eventos | `audit_id`, `event_id`, `component`, `status`, `observed_at`, `detail` | `event_id` |
 
 El segundo tópico y su Dataflow producen `Gold.insights_streaming` y `Gold.procesamiento_auditoria`. Se exige la misma correlación en ambas. Si no se observa `EVENTO_RECIBIDO` o `INSIGHT_GENERADO`, registrar el caso como no verificado, aunque el job esté RUNNING.
 
@@ -213,13 +237,17 @@ Los archivos ingresan a Cloud Storage Landing. Bronze conserva procedencia, `bat
 | Eventos locales | eventos_locales_raw | eventos_locales | local_event_id |
 | Redes sociales | redes_sociales_raw | redes_sociales | post_id |
 
-### Control de lote
+### Contrato de ejecución de lote
 
-1. Identificar archivo, fecha de extracción, `batch_id`, hash y volumen.
-2. Cargar Bronze conservando registro fuente y metadatos.
-3. Aplicar normalización, control de claves y rechazos a Silver.
-4. Publicar Gold solo con reglas de completitud y granularidad verificadas.
-5. Conciliar conteos, nulos y duplicados; registrar estado de Workflow.
+| Etapa | Entrada | Procesamiento | Salida y control |
+|---|---|---|---|
+| Identificación | archivo ad hoc | asignar `batch_id`, `file_id` y `record_hash` | referencia reproducible de archivo |
+| Ingesta | archivo de Landing | cargar JSON y procedencia | `Bronze.*_raw` con `payload_json` e `is_valid` |
+| Curación | `Bronze.*_raw` filtrado por `batch_id` | `JSON_VALUE`, `SAFE_CAST`, `MERGE` | seis entidades Silver y `quality_status` |
+| Publicación | pedidos, inventario y entregas Silver | joins, cálculos y agregaciones | CU01–CU03 y `operational_mart` |
+| Conciliación | identificador de ejecución | comparar conteos, nulos, duplicados y estado | acta y ejecución Workflows |
+
+Los campos físicos del envelope Bronze, las claves de cada dominio y los esquemas de entrada se detallan en el anexo E.
 
 **Cómputo bajo demanda:** Storage Transfer gestiona transferencias y Dataproc/Spark puede ejecutar transformaciones intensivas mediante clústeres efímeros, sujetos a políticas de finalización.
 
@@ -330,14 +358,22 @@ Las vistas deben explicitar columnas, filtros, fuentes Gold y vigencia. El consu
 
 Cloud Run expone una API privada con autenticación IAM, mínimo cero instancias, máximo dos y límite documentado de 100 filas por solicitud. La integración con consumidores externos se gestiona mediante contratos independientes. Una respuesta de `/healthz` no demuestra la funcionalidad de las rutas de negocio.
 
-| Endpoint | Fuente | Función | Aceptación |
+| Método y ruta | Entrada HTTP | Fuente BigQuery | Salida JSON |
 |---|---|---|---|
-| `/api/v1/insights` | insights_streaming / CU01 | señales y riesgo | HTTP 200 autenticado y esquema válido |
-| `/api/v1/kpis` | CU03 | indicadores | datos Gold consultables |
-| `/api/v1/inventory-plans` | CU02 | reposición | respuesta y filtros válidos |
-| `/api/v1/maintenance-risks` | CU04 | mantenimiento | respuesta y filtros válidos |
+| `GET /api/v1/insights` | `limit`, `scenario_id` opcional | `insights_streaming`, CU01 | `streaming_insights[]`, `stockout_risks[]`, `counts`, `scenario_id` |
+| `GET /api/v1/kpis` | mismos parámetros | CU03 | `data[]`, `count`, `source_table`, `scenario_id` |
+| `GET /api/v1/inventory-plans` | mismos parámetros | CU02 | mismo envelope `data[]` |
+| `GET /api/v1/maintenance-risks` | mismos parámetros | CU04 | mismo envelope `data[]` |
+| `GET /healthz` | sin parámetros | ninguna | `{"status":"ok"}` |
 
-El anexo C documenta cada contrato de forma resumida y exige verificar métodos, parámetros, tipos, estados y estructura exacta en el código fuente antes de declararlos definitivos.
+| Regla transversal | Contrato |
+|---|---|
+| Autenticación | token de identidad y permiso IAM de invocación Cloud Run |
+| `limit` | entero entre 1 y 100; valor predeterminado 25 |
+| `scenario_id` | cadena opcional de hasta 128 caracteres conforme al patrón definido en el anexo C |
+| Errores de aplicación | HTTP 400 `invalid_query`, 404 `route_not_found`, 405 `method_not_allowed`, 500 `query_failed` |
+
+Las respuestas y los errores se derivan de `soluciones/api-insights/main.py`; el anexo C presenta los contratos completos.
 
 **Figura EV-API-01 — Servicio Cloud Run privado**
 
