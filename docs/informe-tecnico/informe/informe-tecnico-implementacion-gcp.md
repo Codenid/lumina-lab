@@ -103,7 +103,7 @@ La vista anterior es una **referencia de arquitectura**, no una captura de recur
 
 **Evidencia EV-ARC-01 — Inventario de servicios GCP**
 
-![PENDIENTE: Inventario de servicios GCP](../assets/evidencia/01-fundacion/01-inventario-servicios.png)
+![PENDIENTE: Inventario de servicios GCP](../assets/evidencia/01-fundacion/01-inventario-servicios.svg)
 
 *Archivo: `01-fundacion/01-inventario-servicios.png`. Captura real pendiente. **Debe mostrar:** proyecto, región, recursos reales y estado. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
 
@@ -143,13 +143,13 @@ La vista anterior es una **referencia de arquitectura**, no una captura de recur
 
 **Evidencia EV-DAT-01 — Buckets de Landing y artefactos**
 
-![PENDIENTE: Buckets de Landing y artefactos](../assets/evidencia/01-fundacion/02-storage-buckets.png)
+![PENDIENTE: Buckets de Landing y artefactos](../assets/evidencia/01-fundacion/02-storage-buckets.svg)
 
 *Archivo: `01-fundacion/02-storage-buckets.png`. Captura real pendiente. **Debe mostrar:** ubicación, nombres y políticas de acceso sin exponer secretos. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
 
 **Evidencia EV-DAT-02 — Datasets Bronze, Silver y Gold**
 
-![PENDIENTE: Datasets Bronze, Silver y Gold](../assets/evidencia/01-fundacion/03-bigquery-medallion.png)
+![PENDIENTE: Datasets Bronze, Silver y Gold](../assets/evidencia/01-fundacion/03-bigquery-medallion.svg)
 
 *Archivo: `01-fundacion/03-bigquery-medallion.png`. Captura real pendiente. **Debe mostrar:** datasets reales, tablas y región. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
 
@@ -183,25 +183,25 @@ El segundo tópico y su Dataflow producen `Gold.insights_streaming` y `Gold.proc
 
 **Evidencia EV-STR-01 — Tópico y suscripciones**
 
-![PENDIENTE: Tópico y suscripciones](../assets/evidencia/02-streaming/01-pubsub-topico-suscripciones.png)
+![PENDIENTE: Tópico y suscripciones](../assets/evidencia/02-streaming/01-pubsub-topico-suscripciones.svg)
 
 *Archivo: `02-streaming/01-pubsub-topico-suscripciones.png`. Captura real pendiente. **Debe mostrar:** nombre del tópico y ramas independientes de raw y Dataflow. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
 
 **Evidencia EV-STR-02 — Ejecución Dataflow**
 
-![PENDIENTE: Ejecución Dataflow](../assets/evidencia/02-streaming/02-dataflow-job.png)
+![PENDIENTE: Ejecución Dataflow](../assets/evidencia/02-streaming/02-dataflow-job.svg)
 
 *Archivo: `02-streaming/02-dataflow-job.png`. Captura real pendiente. **Debe mostrar:** job, región, worker y estado terminal. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
 
 **Evidencia EV-STR-03 — Evento correlacionado Bronze/Silver**
 
-![PENDIENTE: Evento correlacionado Bronze/Silver](../assets/evidencia/02-streaming/03-bq-bronze-silver-evento.png)
+![PENDIENTE: Evento correlacionado Bronze/Silver](../assets/evidencia/02-streaming/03-bq-bronze-silver-evento.svg)
 
 *Archivo: `02-streaming/03-bq-bronze-silver-evento.png`. Captura real pendiente. **Debe mostrar:** mismo event_id y order_id en las consultas. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
 
 **Evidencia EV-STR-04 — Insights y auditoría**
 
-![PENDIENTE: Insights y auditoría](../assets/evidencia/03-insights/01-bq-insights-auditoria.png)
+![PENDIENTE: Insights y auditoría](../assets/evidencia/03-insights/01-bq-insights-auditoria.svg)
 
 *Archivo: `03-insights/01-bq-insights-auditoria.png`. Captura real pendiente. **Debe mostrar:** mismo event_id en ambas tablas Gold. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
 
@@ -240,19 +240,19 @@ Los archivos ingresan a Cloud Storage Landing. Bronze conserva procedencia, `bat
 
 **Evidencia EV-BAT-01 — Landing y transferencia**
 
-![PENDIENTE: Landing y transferencia](../assets/evidencia/04-batch/01-landing-transfer.png)
+![PENDIENTE: Landing y transferencia](../assets/evidencia/04-batch/01-landing-transfer.svg)
 
 *Archivo: `04-batch/01-landing-transfer.png`. Captura real pendiente. **Debe mostrar:** objeto fuente, trabajo y transferencia completada. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
 
 **Evidencia EV-BAT-02 — Ejecución Workflows**
 
-![PENDIENTE: Ejecución Workflows](../assets/evidencia/04-batch/02-workflow-execution.png)
+![PENDIENTE: Ejecución Workflows](../assets/evidencia/04-batch/02-workflow-execution.svg)
 
 *Archivo: `04-batch/02-workflow-execution.png`. Captura real pendiente. **Debe mostrar:** revisión, cuenta y ejecución SUCCEEDED. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
 
 **Evidencia EV-BAT-03 — Recorrido batch a Mart**
 
-![PENDIENTE: Recorrido batch a Mart](../assets/evidencia/04-batch/03-bq-batch-mart.png)
+![PENDIENTE: Recorrido batch a Mart](../assets/evidencia/04-batch/03-bq-batch-mart.svg)
 
 *Archivo: `04-batch/03-bq-batch-mart.png`. Captura real pendiente. **Debe mostrar:** mismo batch_id en Bronze, Silver, Gold y Mart. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
 
@@ -327,13 +327,13 @@ Las vistas deben explicitar columnas, filtros, fuentes Gold y vigencia. El consu
 
 **Evidencia EV-GOL-01 — Forecast, predicción y reposición**
 
-![PENDIENTE: Forecast, predicción y reposición](../assets/evidencia/05-forecast/01-features-predicciones-plan.png)
+![PENDIENTE: Forecast, predicción y reposición](../assets/evidencia/05-forecast/01-features-predicciones-plan.svg)
 
 *Archivo: `05-forecast/01-features-predicciones-plan.png`. Captura real pendiente. **Debe mostrar:** identificador de corrida en features, predicción, plan y artefacto. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
 
 **Evidencia EV-GOL-02 — Vistas analíticas Gold**
 
-![PENDIENTE: Vistas analíticas Gold](../assets/evidencia/06-consumo/03-bigquery-vistas.png)
+![PENDIENTE: Vistas analíticas Gold](../assets/evidencia/06-consumo/03-bigquery-vistas.svg)
 
 *Archivo: `06-consumo/03-bigquery-vistas.png`. Captura real pendiente. **Debe mostrar:** vistas y consultas con resultados. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
 
@@ -362,13 +362,13 @@ El anexo C documenta cada contrato de forma resumida y exige verificar métodos,
 
 **Evidencia EV-API-01 — Servicio Cloud Run privado**
 
-![PENDIENTE: Servicio Cloud Run privado](../assets/evidencia/06-consumo/01-cloud-run-servicio.png)
+![PENDIENTE: Servicio Cloud Run privado](../assets/evidencia/06-consumo/01-cloud-run-servicio.svg)
 
 *Archivo: `06-consumo/01-cloud-run-servicio.png`. Captura real pendiente. **Debe mostrar:** revisión READY, región, identidad y autenticación. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
 
 **Evidencia EV-API-02 — Respuestas de negocio**
 
-![PENDIENTE: Respuestas de negocio](../assets/evidencia/06-consumo/02-api-rutas.png)
+![PENDIENTE: Respuestas de negocio](../assets/evidencia/06-consumo/02-api-rutas.svg)
 
 *Archivo: `06-consumo/02-api-rutas.png`. Captura real pendiente. **Debe mostrar:** HTTP 200 autenticado de las cuatro rutas. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
 
@@ -397,13 +397,13 @@ El anexo C documenta cada contrato de forma resumida y exige verificar métodos,
 
 **Evidencia EV-SEC-01 — Gobierno y cifrado**
 
-![PENDIENTE: Gobierno y cifrado](../assets/evidencia/07-controles/01-gobierno-seguridad.png)
+![PENDIENTE: Gobierno y cifrado](../assets/evidencia/07-controles/01-gobierno-seguridad.svg)
 
 *Archivo: `07-controles/01-gobierno-seguridad.png`. Captura real pendiente. **Debe mostrar:** Dataplex/Lineage, KMS y Secret Manager sin secretos. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
 
 **Evidencia EV-SEC-02 — Auditoría y monitoreo**
 
-![PENDIENTE: Auditoría y monitoreo](../assets/evidencia/07-controles/02-auditoria-observabilidad.png)
+![PENDIENTE: Auditoría y monitoreo](../assets/evidencia/07-controles/02-auditoria-observabilidad.svg)
 
 *Archivo: `07-controles/02-auditoria-observabilidad.png`. Captura real pendiente. **Debe mostrar:** sink, Audit Store, métrica, alerta y SLO. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
 
@@ -440,7 +440,7 @@ El anexo C documenta cada contrato de forma resumida y exige verificar métodos,
 5. Cancelar los jobs Dataflow de demostración y verificar estado terminal.
 6. No ejecutar el script 90 de eliminación como parte del recorrido estándar.
 
-Las capturas grises son **placeholders**, no pruebas. Antes de entrega formal al cliente, sustituirlas y actualizar la matriz con el resultado observado.
+Las figuras SVG grises señalan el archivo PNG real esperado y son **placeholders**, no pruebas. Antes de entrega formal al cliente, sustituirlas y actualizar la matriz con el resultado observado.
 
 
 ---
