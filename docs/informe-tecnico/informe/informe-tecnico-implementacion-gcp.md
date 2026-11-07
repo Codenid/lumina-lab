@@ -103,14 +103,17 @@ La vista ArchiMate describe los componentes, integraciones y responsabilidades d
 
 ![Apertura visual del capítulo](../assets/miniportadas/04-fuentes-contratos.svg)
 
-### Fuentes y correspondencia
+### Fuentes propias y contratos de generación
+
+La implementación utiliza **exclusivamente conjuntos de datos y eventos ad hoc generados para Lumina Retail**. No se han ingerido datasets públicos ni conectado fuentes externas reales. Las familias descritas representan escenarios de negocio simulados y se procesan mediante los contratos y pipelines propios de la plataforma.
+
+
 
 | Familia | Fuente de datos | Aplicación en la solución | Precaución |
 |---|---|---|---|
-| Comercio | theLook, Olist, UCI | histórico, catálogo, baseline | No unir IDs de datasets públicos sin correspondencia validada |
-| Operación | pedidos, inventario, entregas | cargas batch | Diferenciar entidad transaccional y snapshot |
-| Entorno | benchmark, eventos locales, redes sociales | enriquecimiento batch | Conservar fuente y vigencia |
-| Telemetría | eventos sintéticos controlados | streaming | No confundir simulación con operación real |
+| Datos operativos ad hoc | pedidos, inventario y entregas generados para Lumina Retail | cargas batch y modelado analítico | Conservar identificadores, granularidad y versión de generación |
+| Datos contextuales ad hoc | benchmark de competidores, eventos locales y redes sociales generados para escenarios controlados | enriquecimiento batch | Identificar cada conjunto como dato sintético, no como extracción externa |
+| Eventos operativos ad hoc | pedidos, inventario, sensores y telemetría producidos por generadores propios | procesamiento streaming | Correlacionar evento, escenario y ejecución |
 
 ### Contrato lógico de evento
 
@@ -260,9 +263,9 @@ Los archivos ingresan a Cloud Storage Landing. Bronze conserva procedencia, `bat
 
 Las reglas de calidad se trazan a su transformación SQL o función de procesamiento, junto con la prueba y el resultado registrado.
 
-### Cruce de fuentes heterogéneas
+### Integración de dominios ad hoc
 
-No se debe unir Olist, UCI y theLook por coincidencia casual de IDs. Las correspondencias entre SKU, producto, tienda y tiempo necesitan un mapa de equivalencias versionado o permanecer como dominios separados. Antes de unir ventas con múltiples eventos se agrega al grano compatible para evitar multiplicación de unidades e importes.
+Los cruces entre pedidos, inventario, entregas y datos contextuales se realizan exclusivamente con claves y correspondencias definidas por los generadores propios. Se preservan la versión del escenario, la trazabilidad del lote o evento y la granularidad de cada entidad. Antes de relacionar ventas con múltiples eventos, los registros se agregan al grano compatible para evitar multiplicar unidades o importes.
 
 ### Indicadores de calidad
 
@@ -397,7 +400,7 @@ El anexo C documenta cada contrato de forma resumida y exige verificar métodos,
 | VAL-STR-02 | evento Insight | mismo event_id en dos Gold | EV-STR-04 | Evidencia de ejecución no incorporada |
 | VAL-BAT-01 | archivo batch | Bronze → Silver → Gold/Mart | EV-BAT-03 | Evidencia de ejecución no incorporada |
 | VAL-TRF-01 | datos con defectos | tipado, rechazo y deduplicación | SQL y resultado antes/después | Resultado de prueba no incorporado |
-| VAL-INT-01 | fuentes heterogéneas | joins por clave sustentada | SQL y resultado integrado | Resultado de prueba no incorporado |
+| VAL-INT-01 | dominios ad hoc | joins por clave sustentada | SQL y resultado integrado | Resultado de prueba no incorporado |
 | VAL-MOD-01 | producto Gold | grano, medidas y consulta | EV-GOL-02 | Evidencia de ejecución no incorporada |
 | VAL-API-01 | llamada autenticada | HTTP 200 y respuesta válida | EV-API-02 | Evidencia de ejecución no incorporada |
 
