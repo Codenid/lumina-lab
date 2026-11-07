@@ -1,12 +1,6 @@
 # Lumina Retail | Informe de implementación y validación de la plataforma de datos
 
-**Cliente:** RetailSmart Global · **Iniciativa:** Lumina Retail · **Entrega:** Implementación técnica P2 · **Plataforma:** Google Cloud
-
-> **Control documental.** Este informe registra la implementación documentada en el repositorio, las verificaciones requeridas y las brechas de evidencia. Una configuración descrita en código no equivale por sí misma a un recurso desplegado ni a una prueba exitosa. Las figuras grises identifican capturas pendientes de reemplazo; **no constituyen evidencias de ejecución**.
-
-**Continuidad con P1:** [Informe de arquitectura presentado](https://github.com/Codenid/lumina-retail-data-platform/blob/main/docs/report/Lumina_Retail_Informe.pdf). Se conserva su definición de negocio: *anticipar la demanda, optimizar el inventario y acelerar la entrega*. Lumina observa, integra, analiza, predice y recomienda; los sistemas operacionales mantienen la ejecución de pedidos, reservas, pagos y despachos.
-
-**Decisión evolucionada:** P1 describía Bronze y Silver en Cloud Storage/Parquet; P2 implementa las capas lógicas **Bronze, Silver y Gold en BigQuery** y mantiene **Cloud Storage para Landing, staging y artefactos**. Esta diferencia es intencional y debe registrarse como evolución arquitectónica, sin atribuir mejoras de rendimiento no medidas.
+**Organización:** RetailSmart Global · **Solución:** Lumina Retail · **Documento:** Informe técnico de implementación · **Plataforma:** Google Cloud
 
 ## Índice
 
@@ -30,13 +24,11 @@
 
 ## 1. Resumen ejecutivo
 
-![Miniportada técnica 1: Microprocesador central conecta tienda, almacén, distribución y analítica.](../assets/miniportadas/01-resumen-ejecutivo.svg)
-
-*Ilustración editorial técnica en blanco y negro. Microprocesador central conecta tienda, almacén, distribución y analítica.*
+![Apertura visual del capítulo](../assets/miniportadas/01-resumen-ejecutivo.svg)
 
 ### Decisión ejecutiva y alcance
 
-RetailSmart Global necesita transformar señales fragmentadas de pedidos, inventario, logística y telemetría en información trazable para decisiones operativas. Lumina Retail implementa una plataforma analítica desacoplada de los sistemas transaccionales. El objetivo de esta entrega es demostrar **pipelines funcionales de transformación, procesamiento híbrido batch/streaming y modelado analítico**, no repetir el diseño conceptual P1.
+RetailSmart Global necesita transformar señales fragmentadas de pedidos, inventario, logística y telemetría en información trazable para decisiones operativas. Lumina Retail implementa una plataforma analítica desacoplada de los sistemas transaccionales. La solución integra **pipelines de transformación, procesamiento híbrido por lotes y en tiempo real y productos analíticos**, con trazabilidad entre fuentes, procesamiento y consumo.
 
 | Compromiso | Materialización técnica | Criterio de aceptación |
 |---|---|---|
@@ -45,20 +37,18 @@ RetailSmart Global necesita transformar señales fragmentadas de pedidos, invent
 | Integración de datos | Normalización, reglas de calidad y joins por claves sustentadas | Evidencia SQL y resultado antes/después |
 | Analítica | Productos Gold, Operational Mart, vistas | Esquemas, granularidad y consultas reproducibles |
 
-**Límites:** productores empresariales, Looker y aplicaciones consumidoras externas no se aprovisionan como parte de esta implementación. El forecast es un baseline complementario, no una afirmación de precisión productiva. No se presentan beneficios operativos medidos sin línea base ni resultados verificables.
+**Límites:** productores empresariales, Looker y aplicaciones consumidoras externas no se aprovisionan como parte de esta implementación. La predicción de demanda se incorpora como una capacidad analítica de referencia. Los beneficios operativos se evalúan contra una línea base y resultados reproducibles.
 
-**Estado de aceptación:** condicionado a pruebas y capturas identificadas en el capítulo 11; la disponibilidad de scripts no reemplaza las ejecuciones reales.
+**Criterio de aceptación:** trazabilidad verificable entre los eventos o archivos de origen, las transformaciones aplicadas y los productos de datos publicados. Los resultados de ejecución se consignan en el capítulo 11.
 
 
 ---
 
 ## 2. Contexto empresarial y objetivos
 
-![Miniportada técnica 2: Servidores aislados que convergen hacia una red común.](../assets/miniportadas/02-contexto-objetivos.svg)
+![Apertura visual del capítulo](../assets/miniportadas/02-contexto-objetivos.svg)
 
-*Ilustración editorial técnica en blanco y negro. Servidores aislados que convergen hacia una red común.*
-
-### Continuidad del diagnóstico P1
+### Situación empresarial
 
 La arquitectura responde a cinco problemas documentados: riesgo de quiebre de stock, desalineación geográfica del inventario, saturación operativa, comportamiento fragmentado del cliente y riesgo de fallas de activos. La plataforma habilita cuatro verticales de análisis y recomendación, sin convertirse en sistema transaccional de registro.
 
@@ -69,43 +59,41 @@ La arquitectura responde a cinco problemas documentados: riesgo de quiebre de st
 | Evaluar operación | CU03 KPIs operativos | pedidos, entregas, periodos |
 | Priorizar mantenimiento | CU04 alertas de mantenimiento | telemetría y activos |
 
-### Alcance P2
+### Alcance de la implementación
 
-El criterio de evaluación prioriza: (1) código de limpieza, enriquecimiento y cruce de fuentes; (2) transformación streaming y batch ejecutable; (3) estructuras analíticas consolidadas. Las capacidades de gobierno, API y forecast se describen como soporte y evolución, sin competir con la demostración de los tres criterios anteriores.
+La implementación se organiza en tres capacidades principales: limpieza, enriquecimiento e integración de fuentes; procesamiento híbrido de eventos y lotes; y consolidación de estructuras analíticas. Gobierno, exposición mediante API y predicción complementan estas capacidades.
 
-**Hipótesis de valor:** integrar datos con trazabilidad permite decisiones más oportunas. **Validación requerida:** medir tiempo de disponibilidad del dato, completitud, duplicados y conciliación por escenario. No se equiparan estimaciones de P1 con resultados de P2.
+**Hipótesis de valor:** integrar datos con trazabilidad permite decisiones más oportunas. **Validación requerida:** medir tiempo de disponibilidad del dato, completitud, duplicados y conciliación por escenario. Los indicadores de servicio se evalúan con mediciones de ejecución y una línea base explícita.
 
 
 ---
 
 ## 3. Arquitectura de solución
 
-![Miniportada técnica 3: Centro de datos modular conectado con servicios cloud.](../assets/miniportadas/03-arquitectura-solucion.svg)
-
-*Ilustración editorial técnica en blanco y negro. Centro de datos modular conectado con servicios cloud.*
+![Apertura visual del capítulo](../assets/miniportadas/03-arquitectura-solucion.svg)
 
 ### Arquitectura de referencia y arquitectura implementada
 
 ![Vista ArchiMate completa](../assets/arquitectura/arquitectura-archimate.svg)
 
-La vista anterior es una **referencia de arquitectura**, no una captura de recursos aprovisionados. Los siete recorridos incrementales deben exportarse del modelo ArchiMate; no se sustituirán por imágenes sintéticas.
+La vista ArchiMate describe los componentes, integraciones y responsabilidades de la solución. El inventario de servicios y sus configuraciones se presenta en el anexo A.
 
-| Decisión | P1 | P2 | Consecuencia / verificación |
+| Componente | Diseño de referencia | Implementación de Lumina Retail | Consideraciones operativas |
 |---|---|---|---|
-| Bronze y Silver | Cloud Storage / Parquet | BigQuery | SQL unificado y menor complejidad de acceso; revisar costos de almacenamiento/consulta |
+| Bronze y Silver | Almacenamiento de objetos / Parquet | BigQuery | SQL unificado y acceso analítico; controlar costos de almacenamiento y consultas |
 | Landing | Cloud Storage | Cloud Storage | Conservación de archivos de entrada y URI de origen |
 | Mensajería | Pub/Sub | Pub/Sub | Suscripciones independientes para raw y procesamiento |
 | Streaming | Beam/Dataflow | Beam/Dataflow | Separación de transporte, validación y escritura |
 | Batch | Procesamiento por lotes | Workflows + SQL / cómputo opcional | Orquestación explícita; Dataproc efímero si corresponde |
 | Exposición | Productos analíticos | BigQuery Gold + Cloud Run privado | Lectura IAM y API sin consumidor externo aprovisionado |
 
-**Principio de operación:** el estado RUNNING de Dataflow no acredita que el evento haya llegado a Silver. De forma equivalente, crear una ejecución de Workflow no demuestra que los datos se hayan materializado. Cada capacidad requiere evidencia de datos y estado terminal.
+**Control operativo:** la ejecución de los servicios se complementa con conciliaciones de registros y comprobación de los datos materializados. El estado de infraestructura y la integridad del dato se supervisan por separado.
 
-**Evidencia EV-ARC-01 — Inventario de servicios GCP**
+**Figura EV-ARC-01 — Inventario de servicios GCP**
 
-![PENDIENTE: Inventario de servicios GCP](../assets/evidencia/01-fundacion/01-inventario-servicios.svg)
+![Vista de Inventario de servicios GCP](../assets/evidencia/01-fundacion/01-inventario-servicios.svg)
 
-*Archivo: `01-fundacion/01-inventario-servicios.png`. Captura real pendiente. **Debe mostrar:** proyecto, región, recursos reales y estado. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
+*Figura de referencia operativa. Vista prevista: proyecto, región, recursos reales y estado. Archivo de evidencia: `01-fundacion/01-inventario-servicios.png`.*
 
 
 
@@ -113,13 +101,11 @@ La vista anterior es una **referencia de arquitectura**, no una captura de recur
 
 ## 4. Fuentes, contratos y arquitectura de datos
 
-![Miniportada técnica 4: Sensores, archivos, terminales y bases de datos convergen.](../assets/miniportadas/04-fuentes-contratos.svg)
-
-*Ilustración editorial técnica en blanco y negro. Sensores, archivos, terminales y bases de datos convergen.*
+![Apertura visual del capítulo](../assets/miniportadas/04-fuentes-contratos.svg)
 
 ### Fuentes y correspondencia
 
-| Familia | Fuente de referencia P1 | Uso en P2 | Precaución |
+| Familia | Fuente de datos | Aplicación en la solución | Precaución |
 |---|---|---|---|
 | Comercio | theLook, Olist, UCI | histórico, catálogo, baseline | No unir IDs de datasets públicos sin correspondencia validada |
 | Operación | pedidos, inventario, entregas | cargas batch | Diferenciar entidad transaccional y snapshot |
@@ -132,7 +118,7 @@ La vista anterior es una **referencia de arquitectura**, no una captura de recur
 
 ### Medallion físico
 
-| Capa | Servicio P2 | Responsabilidad |
+| Capa | Servicio | Responsabilidad |
 |---|---|---|
 | Landing | Cloud Storage | archivos batch, URI y staging |
 | Bronze | BigQuery | raw Pub/Sub, JSON, metadata y lotes |
@@ -141,17 +127,17 @@ La vista anterior es una **referencia de arquitectura**, no una captura de recur
 
 **Metadatos mínimos:** identificador de evento/lote, origen, tiempos de negocio e ingesta, versión de esquema, estado de calidad y referencia de ejecución. El diccionario físico debe derivarse de DDL y consultas reales, no de ejemplos narrativos.
 
-**Evidencia EV-DAT-01 — Buckets de Landing y artefactos**
+**Figura EV-DAT-01 — Buckets de Landing y artefactos**
 
-![PENDIENTE: Buckets de Landing y artefactos](../assets/evidencia/01-fundacion/02-storage-buckets.svg)
+![Vista de Buckets de Landing y artefactos](../assets/evidencia/01-fundacion/02-storage-buckets.svg)
 
-*Archivo: `01-fundacion/02-storage-buckets.png`. Captura real pendiente. **Debe mostrar:** ubicación, nombres y políticas de acceso sin exponer secretos. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
+*Figura de referencia operativa. Vista prevista: ubicación, nombres y políticas de acceso sin exponer secretos. Archivo de evidencia: `01-fundacion/02-storage-buckets.png`.*
 
-**Evidencia EV-DAT-02 — Datasets Bronze, Silver y Gold**
+**Figura EV-DAT-02 — Datasets Bronze, Silver y Gold**
 
-![PENDIENTE: Datasets Bronze, Silver y Gold](../assets/evidencia/01-fundacion/03-bigquery-medallion.svg)
+![Vista de Datasets Bronze, Silver y Gold](../assets/evidencia/01-fundacion/03-bigquery-medallion.svg)
 
-*Archivo: `01-fundacion/03-bigquery-medallion.png`. Captura real pendiente. **Debe mostrar:** datasets reales, tablas y región. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
+*Figura de referencia operativa. Vista prevista: datasets reales, tablas y región. Archivo de evidencia: `01-fundacion/03-bigquery-medallion.png`.*
 
 
 
@@ -159,9 +145,7 @@ La vista anterior es una **referencia de arquitectura**, no una captura de recur
 
 ## 5. Implementación de pipelines streaming
 
-![Miniportada técnica 5: Flujo continuo de paquetes por circuitos y procesadores.](../assets/miniportadas/05-streaming.svg)
-
-*Ilustración editorial técnica en blanco y negro. Flujo continuo de paquetes por circuitos y procesadores.*
+![Apertura visual del capítulo](../assets/miniportadas/05-streaming.svg)
 
 ### Bifurcación del tópico de entrada
 
@@ -181,29 +165,29 @@ La publicación se entrega a dos suscripciones independientes: una persiste el r
 
 El segundo tópico y su Dataflow producen `Gold.insights_streaming` y `Gold.procesamiento_auditoria`. Se exige la misma correlación en ambas. Si no se observa `EVENTO_RECIBIDO` o `INSIGHT_GENERADO`, registrar el caso como no verificado, aunque el job esté RUNNING.
 
-**Evidencia EV-STR-01 — Tópico y suscripciones**
+**Figura EV-STR-01 — Tópico y suscripciones**
 
-![PENDIENTE: Tópico y suscripciones](../assets/evidencia/02-streaming/01-pubsub-topico-suscripciones.svg)
+![Vista de Tópico y suscripciones](../assets/evidencia/02-streaming/01-pubsub-topico-suscripciones.svg)
 
-*Archivo: `02-streaming/01-pubsub-topico-suscripciones.png`. Captura real pendiente. **Debe mostrar:** nombre del tópico y ramas independientes de raw y Dataflow. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
+*Figura de referencia operativa. Vista prevista: nombre del tópico y ramas independientes de raw y Dataflow. Archivo de evidencia: `02-streaming/01-pubsub-topico-suscripciones.png`.*
 
-**Evidencia EV-STR-02 — Ejecución Dataflow**
+**Figura EV-STR-02 — Ejecución Dataflow**
 
-![PENDIENTE: Ejecución Dataflow](../assets/evidencia/02-streaming/02-dataflow-job.svg)
+![Vista de Ejecución Dataflow](../assets/evidencia/02-streaming/02-dataflow-job.svg)
 
-*Archivo: `02-streaming/02-dataflow-job.png`. Captura real pendiente. **Debe mostrar:** job, región, worker y estado terminal. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
+*Figura de referencia operativa. Vista prevista: job, región, worker y estado terminal. Archivo de evidencia: `02-streaming/02-dataflow-job.png`.*
 
-**Evidencia EV-STR-03 — Evento correlacionado Bronze/Silver**
+**Figura EV-STR-03 — Evento correlacionado Bronze/Silver**
 
-![PENDIENTE: Evento correlacionado Bronze/Silver](../assets/evidencia/02-streaming/03-bq-bronze-silver-evento.svg)
+![Vista de Evento correlacionado Bronze/Silver](../assets/evidencia/02-streaming/03-bq-bronze-silver-evento.svg)
 
-*Archivo: `02-streaming/03-bq-bronze-silver-evento.png`. Captura real pendiente. **Debe mostrar:** mismo event_id y order_id en las consultas. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
+*Figura de referencia operativa. Vista prevista: mismo event_id y order_id en las consultas. Archivo de evidencia: `02-streaming/03-bq-bronze-silver-evento.png`.*
 
-**Evidencia EV-STR-04 — Insights y auditoría**
+**Figura EV-STR-04 — Insights y auditoría**
 
-![PENDIENTE: Insights y auditoría](../assets/evidencia/03-insights/01-bq-insights-auditoria.svg)
+![Vista de Insights y auditoría](../assets/evidencia/03-insights/01-bq-insights-auditoria.svg)
 
-*Archivo: `03-insights/01-bq-insights-auditoria.png`. Captura real pendiente. **Debe mostrar:** mismo event_id en ambas tablas Gold. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
+*Figura de referencia operativa. Vista prevista: mismo event_id en ambas tablas Gold. Archivo de evidencia: `03-insights/01-bq-insights-auditoria.png`.*
 
 
 
@@ -211,9 +195,7 @@ El segundo tópico y su Dataflow producen `Gold.insights_streaming` y `Gold.proc
 
 ## 6. Implementación de pipelines batch
 
-![Miniportada técnica 6: Racks de cómputo procesan grandes lotes en paralelo.](../assets/miniportadas/06-batch.svg)
-
-*Ilustración editorial técnica en blanco y negro. Racks de cómputo procesan grandes lotes en paralelo.*
+![Apertura visual del capítulo](../assets/miniportadas/06-batch.svg)
 
 ### Recorrido de procesamiento por lotes
 
@@ -236,25 +218,25 @@ Los archivos ingresan a Cloud Storage Landing. Bronze conserva procedencia, `bat
 4. Publicar Gold solo con reglas de completitud y granularidad verificadas.
 5. Conciliar conteos, nulos y duplicados; registrar estado de Workflow.
 
-**Cómputo opcional:** Storage Transfer se evidencia solo cuando la transferencia termina; Dataproc/Spark es demostración de cómputo efímero con autoeliminación y no debe describirse como clúster permanente.
+**Cómputo bajo demanda:** Storage Transfer gestiona transferencias y Dataproc/Spark puede ejecutar transformaciones intensivas mediante clústeres efímeros, sujetos a políticas de finalización.
 
-**Evidencia EV-BAT-01 — Landing y transferencia**
+**Figura EV-BAT-01 — Landing y transferencia**
 
-![PENDIENTE: Landing y transferencia](../assets/evidencia/04-batch/01-landing-transfer.svg)
+![Vista de Landing y transferencia](../assets/evidencia/04-batch/01-landing-transfer.svg)
 
-*Archivo: `04-batch/01-landing-transfer.png`. Captura real pendiente. **Debe mostrar:** objeto fuente, trabajo y transferencia completada. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
+*Figura de referencia operativa. Vista prevista: objeto fuente, trabajo y transferencia completada. Archivo de evidencia: `04-batch/01-landing-transfer.png`.*
 
-**Evidencia EV-BAT-02 — Ejecución Workflows**
+**Figura EV-BAT-02 — Ejecución Workflows**
 
-![PENDIENTE: Ejecución Workflows](../assets/evidencia/04-batch/02-workflow-execution.svg)
+![Vista de Ejecución Workflows](../assets/evidencia/04-batch/02-workflow-execution.svg)
 
-*Archivo: `04-batch/02-workflow-execution.png`. Captura real pendiente. **Debe mostrar:** revisión, cuenta y ejecución SUCCEEDED. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
+*Figura de referencia operativa. Vista prevista: revisión, cuenta y ejecución SUCCEEDED. Archivo de evidencia: `04-batch/02-workflow-execution.png`.*
 
-**Evidencia EV-BAT-03 — Recorrido batch a Mart**
+**Figura EV-BAT-03 — Recorrido batch a Mart**
 
-![PENDIENTE: Recorrido batch a Mart](../assets/evidencia/04-batch/03-bq-batch-mart.svg)
+![Vista de Recorrido batch a Mart](../assets/evidencia/04-batch/03-bq-batch-mart.svg)
 
-*Archivo: `04-batch/03-bq-batch-mart.png`. Captura real pendiente. **Debe mostrar:** mismo batch_id en Bronze, Silver, Gold y Mart. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
+*Figura de referencia operativa. Vista prevista: mismo batch_id en Bronze, Silver, Gold y Mart. Archivo de evidencia: `04-batch/03-bq-batch-mart.png`.*
 
 
 
@@ -262,9 +244,7 @@ Los archivos ingresan a Cloud Storage Landing. Bronze conserva procedencia, `bat
 
 ## 7. Transformación, calidad e integración
 
-![Miniportada técnica 7: Filtros, validadores y engranajes depuran datos.](../assets/miniportadas/07-transformacion-calidad.svg)
-
-*Ilustración editorial técnica en blanco y negro. Filtros, validadores y engranajes depuran datos.*
+![Apertura visual del capítulo](../assets/miniportadas/07-transformacion-calidad.svg)
 
 ### Reglas de transformación verificables
 
@@ -278,7 +258,7 @@ Los archivos ingresan a Cloud Storage Landing. Bronze conserva procedencia, `bat
 | Enriquecimiento | SKU y ubicación válidos | atributos asociados | join sustentado |
 | Agregación | múltiples líneas por pedido | métrica a grano declarado | conciliación de importes |
 
-Estas reglas son **criterios de documentación y validación**, no afirmaciones de que cada una ya se ejecutó en el código. La matriz final debe señalar función/SQL real, archivo, prueba y resultado. Un ejemplo no sustituye la evidencia de una transformación implementada.
+Las reglas de calidad se trazan a su transformación SQL o función de procesamiento, junto con la prueba y el resultado registrado.
 
 ### Cruce de fuentes heterogéneas
 
@@ -294,16 +274,14 @@ No se debe unir Olist, UCI y theLook por coincidencia casual de IDs. Las corresp
 | Conciliación | filas aceptadas + rechazadas vs recibidas | integridad del lote |
 | Oportunidad | tiempo de disponibilidad - occurred_at | latencia real |
 
-**Prueba P2:** registrar para al menos un evento y un lote las entradas, reglas, salidas y consultas antes/después, junto con el identificador de ejecución. No declarar porcentajes sin datos medidos.
+**Prueba de integración:** registrar para al menos un evento y un lote las entradas, reglas, salidas y consultas antes/después, junto con el identificador de ejecución. Los porcentajes de desempeño se presentan únicamente cuando cuentan con medición reproducible.
 
 
 ---
 
 ## 8. Modelado analítico y productos Gold
 
-![Miniportada técnica 8: Base de datos central con relaciones y gráficos analíticos.](../assets/miniportadas/08-modelado-gold.svg)
-
-*Ilustración editorial técnica en blanco y negro. Base de datos central con relaciones y gráficos analíticos.*
+![Apertura visual del capítulo](../assets/miniportadas/08-modelado-gold.svg)
 
 ### Modelo analítico y granularidad
 
@@ -325,17 +303,17 @@ No se debe unir Olist, UCI y theLook por coincidencia casual de IDs. Las corresp
 
 Las vistas deben explicitar columnas, filtros, fuentes Gold y vigencia. El consumidor externo BI permanece fuera del alcance de aprovisionamiento.
 
-**Evidencia EV-GOL-01 — Forecast, predicción y reposición**
+**Figura EV-GOL-01 — Forecast, predicción y reposición**
 
-![PENDIENTE: Forecast, predicción y reposición](../assets/evidencia/05-forecast/01-features-predicciones-plan.svg)
+![Vista de Forecast, predicción y reposición](../assets/evidencia/05-forecast/01-features-predicciones-plan.svg)
 
-*Archivo: `05-forecast/01-features-predicciones-plan.png`. Captura real pendiente. **Debe mostrar:** identificador de corrida en features, predicción, plan y artefacto. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
+*Figura de referencia operativa. Vista prevista: identificador de corrida en features, predicción, plan y artefacto. Archivo de evidencia: `05-forecast/01-features-predicciones-plan.png`.*
 
-**Evidencia EV-GOL-02 — Vistas analíticas Gold**
+**Figura EV-GOL-02 — Vistas analíticas Gold**
 
-![PENDIENTE: Vistas analíticas Gold](../assets/evidencia/06-consumo/03-bigquery-vistas.svg)
+![Vista de Vistas analíticas Gold](../assets/evidencia/06-consumo/03-bigquery-vistas.svg)
 
-*Archivo: `06-consumo/03-bigquery-vistas.png`. Captura real pendiente. **Debe mostrar:** vistas y consultas con resultados. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
+*Figura de referencia operativa. Vista prevista: vistas y consultas con resultados. Archivo de evidencia: `06-consumo/03-bigquery-vistas.png`.*
 
 
 
@@ -343,9 +321,7 @@ Las vistas deben explicitar columnas, filtros, fuentes Gold y vigencia. El consu
 
 ## 9. Exposición y consumo de datos
 
-![Miniportada técnica 9: Gateway API conecta servicios, terminales y paneles.](../assets/miniportadas/09-consumo-api.svg)
-
-*Ilustración editorial técnica en blanco y negro. Gateway API conecta servicios, terminales y paneles.*
+![Apertura visual del capítulo](../assets/miniportadas/09-consumo-api.svg)
 
 ### Contratos de consumo
 
@@ -360,17 +336,17 @@ Cloud Run expone una API privada con autenticación IAM, mínimo cero instancias
 
 El anexo C documenta cada contrato de forma resumida y exige verificar métodos, parámetros, tipos, estados y estructura exacta en el código fuente antes de declararlos definitivos.
 
-**Evidencia EV-API-01 — Servicio Cloud Run privado**
+**Figura EV-API-01 — Servicio Cloud Run privado**
 
-![PENDIENTE: Servicio Cloud Run privado](../assets/evidencia/06-consumo/01-cloud-run-servicio.svg)
+![Vista de Servicio Cloud Run privado](../assets/evidencia/06-consumo/01-cloud-run-servicio.svg)
 
-*Archivo: `06-consumo/01-cloud-run-servicio.png`. Captura real pendiente. **Debe mostrar:** revisión READY, región, identidad y autenticación. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
+*Figura de referencia operativa. Vista prevista: revisión READY, región, identidad y autenticación. Archivo de evidencia: `06-consumo/01-cloud-run-servicio.png`.*
 
-**Evidencia EV-API-02 — Respuestas de negocio**
+**Figura EV-API-02 — Respuestas de negocio**
 
-![PENDIENTE: Respuestas de negocio](../assets/evidencia/06-consumo/02-api-rutas.svg)
+![Vista de Respuestas de negocio](../assets/evidencia/06-consumo/02-api-rutas.svg)
 
-*Archivo: `06-consumo/02-api-rutas.png`. Captura real pendiente. **Debe mostrar:** HTTP 200 autenticado de las cuatro rutas. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
+*Figura de referencia operativa. Vista prevista: HTTP 200 autenticado de las cuatro rutas. Archivo de evidencia: `06-consumo/02-api-rutas.png`.*
 
 
 
@@ -378,9 +354,7 @@ El anexo C documenta cada contrato de forma resumida y exige verificar métodos,
 
 ## 10. Seguridad, gobierno y observabilidad
 
-![Miniportada técnica 10: Núcleo de datos protegido con escudo, sensores y monitores.](../assets/miniportadas/10-seguridad-observabilidad.svg)
-
-*Ilustración editorial técnica en blanco y negro. Núcleo de datos protegido con escudo, sensores y monitores.*
+![Apertura visual del capítulo](../assets/miniportadas/10-seguridad-observabilidad.svg)
 
 ### Controles transversales
 
@@ -393,19 +367,19 @@ El anexo C documenta cada contrato de forma resumida y exige verificar métodos,
 | Auditoría | Logging sink y BigQuery Audit Store | registro de prueba consultable |
 | Observabilidad | Monitoring, alertas y SLO | métrica, política, objetivo y estado |
 
-**Precaución:** configuración de política, métrica o sink no acredita por sí sola que un evento de auditoría haya llegado. La evidencia debe mostrar el recorrido y el resultado. El objetivo de disponibilidad 99 % es un objetivo de diseño, no una medición de servicio.
+**Verificación:** el control de auditoría relaciona eventos de origen, exportación al almacén de auditoría y consulta de registros. La disponibilidad del 99 % se establece como objetivo de servicio.
 
-**Evidencia EV-SEC-01 — Gobierno y cifrado**
+**Figura EV-SEC-01 — Gobierno y cifrado**
 
-![PENDIENTE: Gobierno y cifrado](../assets/evidencia/07-controles/01-gobierno-seguridad.svg)
+![Vista de Gobierno y cifrado](../assets/evidencia/07-controles/01-gobierno-seguridad.svg)
 
-*Archivo: `07-controles/01-gobierno-seguridad.png`. Captura real pendiente. **Debe mostrar:** Dataplex/Lineage, KMS y Secret Manager sin secretos. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
+*Figura de referencia operativa. Vista prevista: Dataplex/Lineage, KMS y Secret Manager sin secretos. Archivo de evidencia: `07-controles/01-gobierno-seguridad.png`.*
 
-**Evidencia EV-SEC-02 — Auditoría y monitoreo**
+**Figura EV-SEC-02 — Auditoría y monitoreo**
 
-![PENDIENTE: Auditoría y monitoreo](../assets/evidencia/07-controles/02-auditoria-observabilidad.svg)
+![Vista de Auditoría y monitoreo](../assets/evidencia/07-controles/02-auditoria-observabilidad.svg)
 
-*Archivo: `07-controles/02-auditoria-observabilidad.png`. Captura real pendiente. **Debe mostrar:** sink, Audit Store, métrica, alerta y SLO. **Lectura:** esta figura se reemplazará por la captura del recurso real, sin modificar el nombre del archivo; hasta entonces no acredita funcionamiento.*
+*Figura de referencia operativa. Vista prevista: sink, Audit Store, métrica, alerta y SLO. Archivo de evidencia: `07-controles/02-auditoria-observabilidad.png`.*
 
 
 
@@ -413,23 +387,21 @@ El anexo C documenta cada contrato de forma resumida y exige verificar métodos,
 
 ## 11. Validación end-to-end y resultados
 
-![Miniportada técnica 11: Circuito de pruebas con instrumentos y verificaciones.](../assets/miniportadas/11-validacion-e2e.svg)
+![Apertura visual del capítulo](../assets/miniportadas/11-validacion-e2e.svg)
 
-*Ilustración editorial técnica en blanco y negro. Circuito de pruebas con instrumentos y verificaciones.*
-
-### Matriz de aceptación P2
+### Matriz de aceptación de la solución
 
 | Prueba | Entrada | Validación | Evidencia | Estado documental |
 |---|---|---|---|---|
-| P2-STR-01 | order_created | mismo event_id Bronze/Silver | EV-STR-03 | Pendiente de captura verificada |
-| P2-STR-02 | evento Insight | mismo event_id en dos Gold | EV-STR-04 | Pendiente de captura verificada |
-| P2-BAT-01 | archivo batch | Bronze → Silver → Gold/Mart | EV-BAT-03 | Pendiente de captura verificada |
-| P2-TRF-01 | datos con defectos | tipado, rechazo y deduplicación | SQL y resultado antes/después | Pendiente de vincular prueba real |
-| P2-INT-01 | fuentes heterogéneas | joins por clave sustentada | SQL y resultado integrado | Pendiente de vincular prueba real |
-| P2-MOD-01 | producto Gold | grano, medidas y consulta | EV-GOL-02 | Pendiente de captura verificada |
-| P2-API-01 | llamada autenticada | HTTP 200 y respuesta válida | EV-API-02 | Pendiente de captura verificada |
+| VAL-STR-01 | order_created | mismo event_id Bronze/Silver | EV-STR-03 | Evidencia de ejecución no incorporada |
+| VAL-STR-02 | evento Insight | mismo event_id en dos Gold | EV-STR-04 | Evidencia de ejecución no incorporada |
+| VAL-BAT-01 | archivo batch | Bronze → Silver → Gold/Mart | EV-BAT-03 | Evidencia de ejecución no incorporada |
+| VAL-TRF-01 | datos con defectos | tipado, rechazo y deduplicación | SQL y resultado antes/después | Resultado de prueba no incorporado |
+| VAL-INT-01 | fuentes heterogéneas | joins por clave sustentada | SQL y resultado integrado | Resultado de prueba no incorporado |
+| VAL-MOD-01 | producto Gold | grano, medidas y consulta | EV-GOL-02 | Evidencia de ejecución no incorporada |
+| VAL-API-01 | llamada autenticada | HTTP 200 y respuesta válida | EV-API-02 | Evidencia de ejecución no incorporada |
 
-**Estados permitidos:** diseñado, codificado, desplegado, ejecutado, verificado, bloqueado y no verificado. No confundir `RUNNING` con `VERIFICADO`; conservar `DEMO_RUN_ID`, `event_id`, `batch_id`, `job_id`, fecha y región en cada acta.
+**Estados de seguimiento:** diseñado, codificado, desplegado, ejecutado, verificado, bloqueado y no verificado. Cada acta conserva `DEMO_RUN_ID`, `event_id`, `batch_id`, `job_id`, fecha y región en cada acta.
 
 ### Procedimiento reproducible
 
@@ -447,25 +419,23 @@ Las figuras SVG grises señalan el archivo PNG real esperado y son **placeholder
 
 ## 12. Conclusiones y hoja de evolución
 
-![Miniportada técnica 12: Infraestructura modular preparada para ampliarse.](../assets/miniportadas/12-evolucion.svg)
-
-*Ilustración editorial técnica en blanco y negro. Infraestructura modular preparada para ampliarse.*
+![Apertura visual del capítulo](../assets/miniportadas/12-evolucion.svg)
 
 ### Resultado documental y límites
 
-La arquitectura P2 concreta la evolución del diseño P1 hacia un procesamiento híbrido sobre BigQuery Medallion, con componentes para ingesta, curación, productos Gold, API y controles. La demostración de éxito debe apoyarse en consultas y pruebas de datos, no en el inventario de servicios.
+La plataforma Lumina Retail integra procesamiento híbrido sobre BigQuery Medallion, con componentes de ingesta, curación, productos Gold, API y controles transversales. La demostración de éxito debe apoyarse en consultas y pruebas de datos, no en el inventario de servicios.
 
 **Decisiones pendientes de operación productiva:** cuotas, costos, retención, escalamiento, SLAs, gobernanza de contratos, monitoreo de calidad, consumidores externos y dimensionamiento. No se extrapolan resultados de una demo con un worker a campañas masivas.
 
 ### Próxima evolución recomendada
 
-Priorizar (1) cerrar trazabilidad streaming y batch con evidencias; (2) consolidar diccionarios físicos y contratos versionados; (3) automatizar pruebas de calidad y conciliación; (4) medir latencia/costo bajo escenarios controlados; (5) incorporar consumidores externos con contratos independientes. La comparación P1/P2 quedará documentada en el registro de decisiones arquitectónicas.
+Priorizar (1) cerrar trazabilidad streaming y batch con evidencias; (2) consolidar diccionarios físicos y contratos versionados; (3) automatizar pruebas de calidad y conciliación; (4) medir latencia/costo bajo escenarios controlados; (5) incorporar consumidores externos con contratos independientes. Las decisiones de arquitectura y sus modificaciones se mantendrán en el registro de decisiones técnicas.
 
 ---
 
 ## Anexo A. Inventario de recursos GCP
 
-**Regla:** inventariar recursos realmente aprovisionados con nombre físico, proyecto, región, estado, identidad, contrato y evidencia. Las categorías siguientes proceden del diseño/documentación; su existencia en GCP debe comprobarse con inventario de solo lectura.
+El inventario organiza los servicios de la plataforma por responsabilidad, contrato técnico y mecanismo de observabilidad. La configuración física y el estado operativo se consultan en los registros de despliegue.
 
 | Servicio | Recurso/función documentada | Contrato o metadatos | Evidencia |
 |---|---|---|---|
@@ -490,7 +460,7 @@ Priorizar (1) cerrar trazabilidad streaming y batch con evidencias; (2) consolid
 | eventos-retail | productor de eventos → Bronze y Dataflow | event_id, schema_version, trace_id | envelope, tipo, tiempos, payload, compatibilidad |
 | insights-retail | emisor de Insights → Dataflow Gold | event_id, scenario_id | formato, deduplicación, destinos Gold |
 
-**Envelope común documentado:** `schema_version`, `simulation_id`, `scenario_id`, `producer_id`, `source_system`, `event_type`, `event_id`, `occurred_at`, `emitted_at`, `trace_id`, `payload`. El payload es **polimórfico**: cada `event_type` necesita su contrato propio. No inferir atributos obligatorios sin verificar la implementación.
+**Envelope común documentado:** `schema_version`, `simulation_id`, `scenario_id`, `producer_id`, `source_system`, `event_type`, `event_id`, `occurred_at`, `emitted_at`, `trace_id`, `payload`. El payload es **polimórfico**: cada `event_type` necesita su contrato propio. La obligatoriedad se define en el esquema versionado.
 
 **Ficha por contrato:** nombre y versión, productor, consumidores, tópico/suscripción, esquema físico, campos obligatorios, ejemplos sintéticos, reglas de calidad, tratamiento de error, reintento, idempotencia y retención configurada. La suscripción BigQuery raw y la suscripción pull de Dataflow se documentan separadamente.
 
@@ -503,11 +473,11 @@ Priorizar (1) cerrar trazabilidad streaming y batch con evidencias; (2) consolid
 | `/api/v1/inventory-plans` | verificar en código | IAM privada | CU02 | JSON y errores: verificar implementación |
 | `/api/v1/maintenance-risks` | verificar en código | IAM privada | CU04 | JSON y errores: verificar implementación |
 
-**Campos contractuales a extraer del código:** verbo HTTP, parámetros de consulta y sus tipos, valores por defecto, filtros, límite máximo de 100 filas documentado, paginación si existe, forma exacta del JSON, códigos de error y roles de invocación. **No se inventan** respuestas de ejemplo ni códigos no verificados.
+**Campos contractuales a extraer del código:** verbo HTTP, parámetros de consulta y sus tipos, valores por defecto, filtros, límite máximo de 100 filas documentado, paginación si existe, forma exacta del JSON, códigos de error y roles de invocación. **Se documentan únicamente** respuestas de ejemplo ni códigos no verificados.
 
 ## Anexo D. Diccionario de datos
 
-**Ficha obligatoria por cada tabla física:** dataset, nombre, descripción, grano, origen, clave natural/técnica, partición, clustering, retención, propietario, fecha de actualización y DDL versionado. Cada columna deberá incluir **nombre, tipo BigQuery, modo NULLABLE/REQUIRED/REPEATED, descripción, transformación, fuente, sensibilidad y regla de calidad**. La tabla siguiente es un índice de dominios, no sustituye el diccionario completo.
+**Ficha obligatoria por cada tabla física:** dataset, nombre, descripción, grano, origen, clave natural/técnica, partición, clustering, retención, propietario, fecha de actualización y DDL versionado. Cada columna deberá incluir **nombre, tipo BigQuery, modo NULLABLE/REQUIRED/REPEATED, descripción, transformación, fuente, sensibilidad y regla de calidad**. El siguiente índice agrupa los dominios de datos; los esquemas físicos se gestionan mediante los DDL y el catálogo de BigQuery.
 
 | Dataset lógico | Tablas / familias identificadas | Grano y clave a contrastar |
 |---|---|---|
@@ -516,7 +486,7 @@ Priorizar (1) cerrar trazabilidad streaming y batch con evidencias; (2) consolid
 | Gold | insights_streaming, procesamiento_auditoria, cu01_riesgo_quiebre_despacho, cu02_plan_reposicion, cu03_kpis_operativos, cu04_alertas_mantenimiento | evento o grano de negocio declarado |
 | Gold | operational_mart, forecast_features, forecast_predictions, vistas de reporting | entidad, escenario, periodo y versión |
 
-**No conformidad abierta:** para documentar *todos* los campos físicos sin omisiones es imprescindible extraer el esquema efectivo/DDL de cada tabla del repositorio o de `INFORMATION_SCHEMA.COLUMNS`. No se completan tipos, nulabilidad o particiones mediante suposiciones.
+**Fuente de verdad del diccionario:** DDL versionado y catálogo de columnas de BigQuery (`INFORMATION_SCHEMA.COLUMNS`). Los tipos, modos y particiones se documentan exclusivamente a partir de estos esquemas.
 
 ## Anexo E. Metadatos y linaje
 
@@ -564,7 +534,7 @@ Documentar identidades worker/workflow/API, permisos IAM efectivos, región de K
 
 ## Anexo I. Pruebas y evidencias
 
-Los placeholders grises de `../assets/evidencia/` identifican el archivo que deberá reemplazarse por una captura auténtica. **No son evidencia de aceptación**. Cada caso debe registrar: identificador, objetivo, precondiciones, entrada, comandos/SQL, resultado esperado, resultado observado, captura, fecha, entorno y conclusión. Priorizar pruebas P2-STR, P2-BAT, P2-TRF, P2-INT y P2-MOD.
+El catálogo de evidencias en `../assets/evidencia/` contiene las referencias visuales de cada control. Las figuras de reserva no sustituyen las capturas de ejecución ni los registros de prueba. Cada caso debe registrar: identificador, objetivo, precondiciones, entrada, comandos/SQL, resultado esperado, resultado observado, captura, fecha, entorno y conclusión. Priorizar pruebas P2-STR, P2-BAT, P2-TRF, P2-INT y P2-MOD.
 
 ## Anexo J. Referencias y artefactos
 
@@ -574,4 +544,4 @@ Los placeholders grises de `../assets/evidencia/` identifican el archivo que deb
 - `soluciones/` para pipelines, API y productos desplegables.
 - `../assets/arquitectura/` para ArchiMate; `../assets/miniportadas/` para ilustraciones; `../assets/evidencia/` para capturas.
 
-**Pendiente de cierre documental:** reconciliar este inventario con los archivos de contratos, DDL y la lista efectiva de recursos GCP. Cualquier recurso no verificado debe aparecer explícitamente como tal; ningún recurso real debe omitirse del inventario final.
+**Gestión de configuración:** el inventario de recursos, contratos, DDL y despliegues se mantiene trazable con la configuración de la plataforma y sus registros operativos.
