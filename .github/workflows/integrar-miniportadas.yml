@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/integrar-miniportadas.yml'
       - 'docs/informe-tecnico/assets/miniportadas/lumina_integracion_miniportadas_v2.zip'
+      - 'docs/informe-tecnico/assets/miniportadas/lumina_integracion_miniportadas_v3.zip'
   workflow_dispatch:
 
 permissions:
@@ -22,7 +23,8 @@ jobs:
         run: |
           set -euo pipefail
           ASSETS="docs/informe-tecnico/assets/miniportadas"
-          ZIP="$ASSETS/lumina_integracion_miniportadas_v2.zip"
+          ZIP="$ASSETS/lumina_integracion_miniportadas_v3.zip"
+          if [ ! -f "$ZIP" ]; then ZIP="$ASSETS/lumina_integracion_miniportadas_v2.zip"; fi
           if [ ! -f "$ZIP" ]; then ZIP="$ASSETS/lumina_integracion_miniportadas.zip"; fi
           REPORT="docs/informe-tecnico/informe/informe-tecnico-implementacion-gcp.md"
           test -f "$ZIP"
