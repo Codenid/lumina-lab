@@ -152,7 +152,7 @@ La implementación utiliza **exclusivamente conjuntos de datos y eventos ad hoc 
 
 ### Bifurcación del tópico de entrada
 
-La publicación se entrega a dos suscripciones independientes: una persiste el raw hacia BigQuery Bronze y otra alimenta el procesamiento Apache Beam/Dataflow hacia Silver. El consumidor debe preservar `event_id`, `message_id`, `publish_time` y los atributos pertinentes. La transformación de `order_created` produce la entidad Silver de pedidos cuando satisface las reglas.
+La publicación se entrega a tres suscripciones independientes: una exporta el raw hacia BigQuery Bronze, otra conserva archivos JSONL en Cloud Storage y otra alimenta el procesamiento Apache Beam/Dataflow hacia Silver. El consumidor debe preservar `event_id`, `message_id`, `publish_time` y los atributos pertinentes. La transformación de `order_created` produce la entidad Silver de pedidos cuando satisface las reglas.
 
 | Etapa | Entrada | Operación | Salida / control |
 |---|---|---|---|
@@ -436,115 +436,523 @@ Priorizar (1) cerrar trazabilidad streaming y batch con evidencias; (2) consolid
 
 ---
 
-## Anexo A. Inventario de recursos GCP
+## Anexo A. Inventario de interfaces y recursos
 
-El inventario organiza los servicios de la plataforma por responsabilidad, contrato técnico y mecanismo de observabilidad. La configuración física y el estado operativo se consultan en los registros de despliegue.
-
-| Servicio | Recurso/función documentada | Contrato o metadatos | Evidencia |
-|---|---|---|---|
-| Cloud Storage | Landing, raw técnico, staging, artifacts, models | bucket, región, URI, lifecycle | EV-DAT-01 |
-| BigQuery | datasets Bronze, Silver, Gold; Audit Store | DDL, particiones, labels, tablas | EV-DAT-02 |
-| Pub/Sub | eventos-retail, insights-retail y suscripciones | esquema, atributos, ack, delivery | EV-STR-01 |
-| Dataflow | pipeline Silver y pipeline Insights | job, worker, región, logs | EV-STR-02 |
-| Workflows | orquestación batch | definición, revisión, ejecución | EV-BAT-02 |
-| Storage Transfer | transferencia de lotes | job, fuente, destino, estado | EV-BAT-01 |
-| Dataproc | cómputo Spark efímero, cuando se ejecute | job, cluster, autoeliminación | acta de ejecución |
-| Cloud Run | API privada | revisión, IAM, endpoints | EV-API-01 |
-| Dataplex / Lineage | catálogo y linaje | activos, vínculos | EV-SEC-01 |
-| IAM | service accounts y roles | miembros y bindings | EV-SEC-01 |
-| KMS / Secret Manager | cifrado y secreto | clave, versión, política | EV-SEC-01 |
-| Sensitive Data Protection (DLP) | plantilla de inspección | tipos y región | EV-SEC-01 |
-| Logging / Monitoring | sink, métrica, alerta, SLO | filtros, destino, objetivo | EV-SEC-02 |
-
-## Anexo B. Contratos Pub/Sub
-
-| Tópico / mensaje | Productor / consumidor | Identificadores | Validación requerida |
-|---|---|---|---|
-| eventos-retail | productor de eventos → Bronze y Dataflow | event_id, schema_version, trace_id | envelope, tipo, tiempos, payload, compatibilidad |
-| insights-retail | emisor de Insights → Dataflow Gold | event_id, scenario_id | formato, deduplicación, destinos Gold |
-
-**Envelope común documentado:** `schema_version`, `simulation_id`, `scenario_id`, `producer_id`, `source_system`, `event_type`, `event_id`, `occurred_at`, `emitted_at`, `trace_id`, `payload`. El payload es **polimórfico**: cada `event_type` necesita su contrato propio. La obligatoriedad se define en el esquema versionado.
-
-**Ficha por contrato:** nombre y versión, productor, consumidores, tópico/suscripción, esquema físico, campos obligatorios, ejemplos sintéticos, reglas de calidad, tratamiento de error, reintento, idempotencia y retención configurada. La suscripción BigQuery raw y la suscripción pull de Dataflow se documentan separadamente.
-
-## Anexo C. Contratos API
-
-| Ruta | Método | Autenticación | Fuente | Respuesta y errores |
+| Componente | Entrada física | Operación | Salida física | Referencia de implementación |
 |---|---|---|---|---|
-| `/api/v1/insights` | verificar en código | IAM privada | insights_streaming/CU01 | JSON y errores: verificar implementación |
-| `/api/v1/kpis` | verificar en código | IAM privada | CU03 | JSON y errores: verificar implementación |
-| `/api/v1/inventory-plans` | verificar en código | IAM privada | CU02 | JSON y errores: verificar implementación |
-| `/api/v1/maintenance-risks` | verificar en código | IAM privada | CU04 | JSON y errores: verificar implementación |
+| Generador de eventos | contrato JSON ad hoc | normaliza, asigna event_id y publica | tópico Pub/Sub de eventos | `08_publicar_evento.sh` |
+| Pub/Sub | JSON de evento | distribuye a tres suscripciones | Dataflow pull, BigQuery raw, GCS JSONL | `05_crear_topicos_y_suscripciones.sh` |
+| Dataflow | suscripción pull | valida y transforma | tablas Silver | `07_iniciar_dataflow.sh` |
+| Carga batch | archivos ad hoc en Landing | parseo, carga, control de lote | BigQuery Bronze | `55_generar_y_publicar_fixtures_batch.sh`, `56_cargar_seis_fuentes_bronze.sh` |
+| Curación SQL | Bronze por batch_id | SAFE_CAST, reglas, MERGE | seis tablas Silver | `57_curar_seis_fuentes_y_gold.sh` |
+| Materialización Gold | Silver validada | joins, agregaciones, cálculos | CU01–CU03, Operational Mart | `57_curar_seis_fuentes_y_gold.sh` |
+| API Cloud Run | GET autenticado, filtros | consultas parametrizadas | JSON de productos Gold | `soluciones/api-insights/main.py` |
+| Workflows | definición y parámetros de ejecución | orquestación batch | estado de ejecución y tablas destino | scripts 49–53 |
+| Gobierno y observabilidad | metadatos, logs, métricas | catálogo, controles y auditoría | linaje, alertas, Audit Store | scripts 70–83 |
 
-**Campos del contrato de servicio:** verbo HTTP, parámetros de consulta y sus tipos, valores por defecto, filtros, límite máximo de 100 filas documentado, paginación si existe, forma exacta del JSON, códigos de error y roles de invocación. **Se documentan únicamente** respuestas de ejemplo ni códigos no verificados.
+Los nombres de proyecto, prefijo, región y datasets son parametrizados. Esta tabla describe las **interfaces implementadas en código**; la comprobación del estado efectivo de GCP se conserva en las actas de operación.
 
-## Anexo D. Diccionario de datos
 
-**Estructura del diccionario por cada tabla física:** dataset, nombre, descripción, grano, origen, clave natural/técnica, partición, clustering, retención, propietario, fecha de actualización y DDL versionado. Cada columna deberá incluir **nombre, tipo BigQuery, modo NULLABLE/REQUIRED/REPEATED, descripción, transformación, fuente, sensibilidad y regla de calidad**. El siguiente índice agrupa los dominios de datos; los esquemas físicos se gestionan mediante los DDL y el catálogo de BigQuery.
+---
 
-| Dataset lógico | Tablas / familias identificadas | Grano y clave a contrastar |
+## Anexo B. Contratos de eventos y mensajería
+
+### B.1 Evento de pedido: entrada real del generador
+
+Fuente versionada: `docs/arquitectura/contrato-evento-original.json`. El script 08 actualiza `event_id`, `simulation_id`, `trace_id` y timestamps para la ejecución; el payload del contrato es:
+
+```json
+{
+  "schema_version": "1.0.0",
+  "simulation_id": "sim-20261103-001",
+  "scenario_id": "black-friday",
+  "producer_id": "channel-apps",
+  "event_type": "order_created",
+  "event_id": "evt-000001",
+  "occurred_at": "2026-11-03T10:00:00Z",
+  "emitted_at": "2026-11-03T10:00:01Z",
+  "trace_id": "trace-order-000001",
+  "payload": {
+    "order_id": "ORD-000001",
+    "customer_id": "CUS-000001",
+    "store_id": "STORE-001",
+    "product_id": "SKU-0001",
+    "quantity": 2
+  }
+}
+```
+
+| Campo | Tipo lógico | Semántica | Tratamiento |
+|---|---|---|---|
+| schema_version | string | versión del envelope | conservar y validar compatibilidad |
+| simulation_id / scenario_id | string | simulación y escenario | segmentación de pruebas |
+| producer_id | string | generador ad hoc | trazabilidad |
+| event_type | string | tipo de evento, p. ej. order_created | enrutamiento |
+| event_id | string | identificador del evento | correlación y duplicados |
+| occurred_at / emitted_at | timestamp ISO 8601 | momento de negocio y publicación | parseo temporal |
+| trace_id | string | seguimiento distribuido | correlación |
+| payload.order_id | string | pedido | clave de negocio |
+| payload.customer_id | string | cliente simulado | atributo de negocio |
+| payload.store_id | string | tienda | dimensión |
+| payload.product_id | string | SKU en el contrato original | atención: no confundir con `sku_id` de Silver |
+| payload.quantity | número | unidades | entero positivo según validación de destino |
+
+**Observación de compatibilidad:** el contrato original usa `product_id`, mientras la tabla Silver `pedidos` utiliza `sku_id`. La correspondencia debe demostrarse en el transformador real; no se presume equivalencia automática.
+
+### B.2 Topología y destinos
+
+| Suscripción | Tipo | Input | Output | Consideración |
+|---|---|---|---|---|
+| `$DF_SUB` | pull | tópico `$TOPIC` | Dataflow → Silver | ack deadline 60 s; no efectuar pull manual |
+| `$RAW_BQ_SUB` | export BigQuery | tópico `$TOPIC` | `Bronze.eventos_raw_pubsub` | `writeMetadata=true` |
+| `$RAW_SUB` | export Cloud Storage | tópico `$TOPIC` | bucket `$BRONZE`, `streaming/*.jsonl` | archivos JSONL, rotación de 60 s |
+
+Además, el script 05 crea `$INSIGHTS_TOPIC` y `$AUDIT_TOPIC`; sus contratos de mensaje deben cotejarse con los publicadores y consumidores correspondientes. La suscripción export a GCS es una **tercera rama**, además de Dataflow y BigQuery, que debe aparecer en el diagrama operativo.
+
+### B.3 Salida raw de Pub/Sub a BigQuery
+
+| Columna | Tipo BigQuery | Contenido |
 |---|---|---|
-| Bronze | eventos_raw_pubsub, pedidos_raw, inventario_raw, entregas_raw, benchmark_competidores_raw, eventos_locales_raw, redes_sociales_raw | mensaje/archivo/fila; claves raw |
-| Silver | pedidos, inventario, entregas, benchmark_competidores, eventos_locales, redes_sociales | order_id + order_line_id; snapshot_id; delivery_id; otras claves del capítulo 6 |
-| Gold | insights_streaming, procesamiento_auditoria, cu01_riesgo_quiebre_despacho, cu02_plan_reposicion, cu03_kpis_operativos, cu04_alertas_mantenimiento | evento o grano de negocio declarado |
-| Gold | operational_mart, forecast_features, forecast_predictions, vistas de reporting | entidad, escenario, periodo y versión |
+| data | JSON | mensaje publicado |
+| subscription_name | STRING | suscripción exportadora |
+| message_id | STRING | identificador Pub/Sub |
+| publish_time | TIMESTAMP | publicación |
+| attributes | JSON | atributos Pub/Sub |
+| ordering_key | STRING | clave de orden si existe |
 
-**Fuente de verdad del diccionario:** DDL versionado y catálogo de columnas de BigQuery (`INFORMATION_SCHEMA.COLUMNS`). Los tipos, modos y particiones se documentan exclusivamente a partir de estos esquemas.
+**Verificación:** publicar `evt-${DEMO_RUN_ID}` y consultar el mensaje en Bronze, contrastando su `event_id` con el registro Silver. La confirmación de publicación no demuestra por sí sola materialización.
 
-## Anexo E. Metadatos y linaje
 
-| Metadato | Nivel | Propósito |
+---
+
+## Anexo C. Contratos REST de consumo
+
+**Implementación de referencia:** `soluciones/api-insights/main.py`. Todas las rutas usan **GET** y entregan `application/json; charset=utf-8`. El servicio Cloud Run exige invocación autenticada con IAM.
+
+### C.1 Parámetros compartidos
+
+| Parámetro | Tipo | Default | Regla |
+|---|---|---|---|
+| limit | integer | 25 | 1–100 inclusive |
+| scenario_id | string opcional | null | expresión `^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$` |
+
+La API consulta BigQuery con parámetros enlazados, límite de facturación **52 428 800 bytes por consulta** y timeout de resultados de **60 segundos**. `scenario_id` filtra tablas CU01–CU04; **no filtra** `insights_streaming`.
+
+### C.2 Operaciones y respuesta
+
+| Método y ruta | Tablas de entrada | Output JSON |
 |---|---|---|
-| event_id, trace_id, message_id | evento | correlación Pub/Sub → Bronze → Silver → Gold |
-| occurred_at, emitted_at, publish_time | evento | oportunidad y orden temporal |
-| batch_id, source_uri, source_row_number, hash | lote/fila | reproceso y conciliación |
-| scenario_id, simulation_id, DEMO_RUN_ID | prueba | aislar recorridos |
-| job_id, execution_id, training_run_id | cómputo | auditoría de ejecución |
-| schema_version, model_version | contrato/modelo | compatibilidad y reproducibilidad |
-| quality_status | registro | aceptación o rechazo |
+| GET /healthz | ninguna | `{"status":"ok"}` |
+| GET /api/v1/insights | insights_streaming + cu01_riesgo_quiebre_despacho | `streaming_insights[]`, `stockout_risks[]`, `counts`, `scenario_id` |
+| GET /api/v1/kpis | cu03_kpis_operativos | `data[]`, `count`, `source_table`, `scenario_id` |
+| GET /api/v1/inventory-plans | cu02_plan_reposicion | mismo envelope `data[]` |
+| GET /api/v1/maintenance-risks | cu04_alertas_mantenimiento | mismo envelope `data[]` |
 
-Registrar linaje **fuente → tópico/archivo → Bronze → transformación → Silver → Gold → vista/API**. Donde Dataplex/Lineage no ofrezca vínculo físico, mantener linaje documentado como tal y no simular una captura automática.
+**Ejemplo de estructura de respuesta** (valores ilustrativos, forma derivada del código):
 
-## Anexo F. Contratos batch
+```json
+{"data":[],"count":0,"source_table":"cu03_kpis_operativos","scenario_id":"demo"}
+```
 
-| Dominio | Contrato mínimo | Clave de conciliación |
+**Ejemplo de estructura Insights:**
+
+```json
+{"streaming_insights":[],"stockout_risks":[],"counts":{"streaming_insights":0,"stockout_risks":0},"scenario_id":null}
+```
+
+### C.3 Errores contractuales
+
+| HTTP | Body | Condición |
 |---|---|---|
-| pedidos | formato, columnas, fecha de extracción, cantidades y moneda | order_id + order_line_id |
-| inventario | SKU, ubicación, snapshot y cantidades | snapshot_id |
-| entregas | entrega, estado, fechas y ubicación | delivery_id |
-| benchmark_competidores | fuente, producto, precio, fecha y moneda | benchmark_id |
-| eventos_locales | evento, ubicación, fecha y categoría | local_event_id |
-| redes_sociales | publicación, fuente, fecha y señal | post_id |
+| 400 | `{"error":"invalid_query","message":"..."}` | limit o scenario_id inválido |
+| 404 | `{"error":"route_not_found"}` | ruta inexistente |
+| 405 | `{"error":"method_not_allowed"}` | método distinto de GET; header Allow: GET |
+| 500 | `{"error":"query_failed"}` | error de consulta BigQuery |
 
-La obligatoriedad, los tipos y los formatos se tomarán del parser/DDL real; las columnas descritas son **familias semánticas**, no un esquema físico confirmado. Adjuntar URI de ejemplo sintético, política de errores y frecuencia por fuente cuando estén definidas.
+Los rechazos de acceso anónimo 401/403 se gestionan en la capa Cloud Run, antes de la aplicación. El verificador `66_verificar_api_retailsmart.sh` exige respuestas HTTP 200 **con al menos una fila** en las cuatro rutas y valida que la API no sea accesible anónimamente.
 
-## Anexo G. Productos analíticos Gold
+### C.4 Campos de salida por producto
 
-| Producto | Consumidor | Validación |
+- **insights_streaming:** `insight_id, event_id, insight_type, sku_id, store_id, score, created_at, status`.
+- **cu01_riesgo_quiebre_despacho:** `scenario_id, sku_id, store_id, risk_score, available_qty, recommended_action, as_of`.
+- **cu02_plan_reposicion:** `scenario_id, sku_id, warehouse_id, plan_date, forecast_qty, recommended_qty, priority`.
+- **cu03_kpis_operativos:** `scenario_id, period_date, channel, orders, units, conversion_rate, delivery_cost, sla_rate`.
+- **cu04_alertas_mantenimiento:** `scenario_id, asset_id, sensor_id, warehouse_id, anomaly_type, severity, metric_value, occurred_at`.
+
+
+---
+
+## Anexo D. Diccionario físico de datos
+
+Los siguientes campos y tipos provienen de las sentencias `CREATE TABLE IF NOT EXISTS` de los scripts 04, 31, 44 y `gold_tables.sql`. `NOT NULL` es la restricción declarada en el DDL. Los esquemas de tablas creadas en otros scripts se deben incorporar con el mismo método; este catálogo no sustituye una extracción del catálogo efectivo de BigQuery.
+
+### `<project>.<dataset>.eventos_raw\`
+
+| Campo | Tipo y restricción |
+|---|---|
+| `schema_version` | STRING NOT NULL |
+| `simulation_id` | STRING NOT NULL |
+| `scenario_id` | STRING NOT NULL |
+| `producer_id` | STRING NOT NULL |
+| `event_type` | STRING NOT NULL |
+| `event_id` | STRING NOT NULL |
+| `occurred_at` | TIMESTAMP NOT NULL |
+| `emitted_at` | TIMESTAMP NOT NULL |
+| `ingested_at` | TIMESTAMP |
+| `trace_id` | STRING NOT NULL |
+| `source_system` | STRING |
+| `payload_json` | JSON |
+| `is_valid` | BOOL |
+
+### `<project>.<dataset>.eventos_raw_pubsub\`
+
+| Campo | Tipo y restricción |
+|---|---|
+| `data` | JSON |
+| `subscription_name` | STRING |
+| `message_id` | STRING |
+| `publish_time` | TIMESTAMP |
+| `attributes` | JSON |
+| `ordering_key` | STRING |
+
+### `<project>.<dataset>.${table}_raw\`
+
+| Campo | Tipo y restricción |
+|---|---|
+| `batch_id` | STRING NOT NULL |
+| `file_id` | STRING NOT NULL |
+| `source_file_uri` | STRING NOT NULL |
+| `source_system` | STRING NOT NULL |
+| `source_row_number` | INT64 NOT NULL |
+| `ingested_at` | TIMESTAMP NOT NULL |
+| `effective_at` | TIMESTAMP |
+| `record_hash` | STRING NOT NULL |
+| `payload_json` | JSON NOT NULL |
+| `is_valid` | BOOL NOT NULL |
+| `error_reason` | STRING |
+
+### `<project>.<dataset>.pedidos\`
+
+| Campo | Tipo y restricción |
+|---|---|
+| `order_id` | STRING NOT NULL |
+| `order_line_id` | STRING |
+| `customer_id` | STRING |
+| `store_id` | STRING |
+| `warehouse_id` | STRING |
+| `sku_id` | STRING NOT NULL |
+| `quantity` | INT64 NOT NULL |
+| `occurred_at` | TIMESTAMP NOT NULL |
+| `quality_status` | STRING NOT NULL |
+
+### `<project>.<dataset>.inventario\`
+
+| Campo | Tipo y restricción |
+|---|---|
+| `snapshot_id` | STRING NOT NULL |
+| `warehouse_id` | STRING NOT NULL |
+| `store_id` | STRING |
+| `sku_id` | STRING NOT NULL |
+| `on_hand_qty` | INT64 NOT NULL |
+| `reserved_qty` | INT64 NOT NULL |
+| `effective_at` | TIMESTAMP NOT NULL |
+| `quality_status` | STRING NOT NULL |
+
+### `<project>.<dataset>.entregas\`
+
+| Campo | Tipo y restricción |
+|---|---|
+| `delivery_id` | STRING NOT NULL |
+| `order_id` | STRING NOT NULL |
+| `store_id` | STRING |
+| `region_id` | STRING |
+| `promised_at` | TIMESTAMP |
+| `delivered_at` | TIMESTAMP |
+| `delivery_cost` | NUMERIC |
+| `quality_status` | STRING NOT NULL |
+
+### `<project>.<dataset>.telemetria_activos\`
+
+| Campo | Tipo y restricción |
+|---|---|
+| `asset_id` | STRING NOT NULL |
+| `sensor_id` | STRING NOT NULL |
+| `warehouse_id` | STRING |
+| `store_id` | STRING |
+| `metric_name` | STRING NOT NULL |
+| `metric_value` | FLOAT64 NOT NULL |
+| `unit` | STRING NOT NULL |
+| `occurred_at` | TIMESTAMP NOT NULL |
+| `quality_status` | STRING NOT NULL |
+
+### `<project>.<dataset>.$table\`
+
+| Campo | Tipo y restricción |
+|---|---|
+| `batch_id` | STRING NOT NULL |
+| `file_id` | STRING NOT NULL |
+| `source_file_uri` | STRING NOT NULL |
+| `source_system` | STRING NOT NULL |
+| `source_row_number` | INT64 NOT NULL |
+| `ingested_at` | TIMESTAMP NOT NULL |
+| `effective_at` | TIMESTAMP |
+| `record_hash` | STRING NOT NULL |
+| `payload_json` | JSON NOT NULL |
+| `is_valid` | BOOL NOT NULL |
+| `error_reason` | STRING |
+
+### `<project>.<dataset>.benchmark_competidores\`
+
+| Campo | Tipo y restricción |
+|---|---|
+| `benchmark_id` | STRING NOT NULL |
+| `competitor_id` | STRING NOT NULL |
+| `sku_id` | STRING NOT NULL |
+| `store_id` | STRING |
+| `observed_at` | TIMESTAMP NOT NULL |
+| `competitor_price` | NUMERIC NOT NULL |
+| `availability` | STRING |
+| `quality_status` | STRING NOT NULL |
+
+### `<project>.<dataset>.eventos_locales\`
+
+| Campo | Tipo y restricción |
+|---|---|
+| `local_event_id` | STRING NOT NULL |
+| `store_id` | STRING NOT NULL |
+| `event_type` | STRING NOT NULL |
+| `start_at` | TIMESTAMP NOT NULL |
+| `end_at` | TIMESTAMP |
+| `impact_score` | FLOAT64 NOT NULL |
+| `quality_status` | STRING NOT NULL |
+
+### `<project>.<dataset>.redes_sociales\`
+
+| Campo | Tipo y restricción |
+|---|---|
+| `post_id` | STRING NOT NULL |
+| `platform` | STRING NOT NULL |
+| `published_at` | TIMESTAMP NOT NULL |
+| `sku_id` | STRING NOT NULL |
+| `sentiment_score` | FLOAT64 NOT NULL |
+| `engagement_count` | INT64 NOT NULL |
+| `text_hash` | STRING NOT NULL |
+| `quality_status` | STRING NOT NULL |
+
+### `<project>.<dataset>.insights_streaming\`
+
+| Campo | Tipo y restricción |
+|---|---|
+| `insight_id` | STRING NOT NULL |
+| `event_id` | STRING NOT NULL |
+| `insight_type` | STRING NOT NULL |
+| `sku_id` | STRING |
+| `store_id` | STRING |
+| `score` | FLOAT64 |
+| `created_at` | TIMESTAMP NOT NULL |
+| `status` | STRING NOT NULL |
+
+### `<project>.<dataset>.procesamiento_auditoria\`
+
+| Campo | Tipo y restricción |
+|---|---|
+| `audit_id` | STRING NOT NULL |
+| `event_id` | STRING NOT NULL |
+| `component` | STRING NOT NULL |
+| `status` | STRING NOT NULL |
+| `observed_at` | TIMESTAMP NOT NULL |
+| `detail` | STRING |
+
+### `<project>.<dataset>.cu01_riesgo_quiebre_despacho`
+
+| Campo | Tipo y restricción |
+|---|---|
+| `scenario_id` | STRING |
+| `sku_id` | STRING |
+| `store_id` | STRING |
+| `risk_score` | FLOAT64 |
+| `available_qty` | INT64 |
+| `recommended_action` | STRING |
+| `as_of` | TIMESTAMP |
+
+### `<project>.<dataset>.cu02_plan_reposicion`
+
+| Campo | Tipo y restricción |
+|---|---|
+| `scenario_id` | STRING |
+| `sku_id` | STRING |
+| `warehouse_id` | STRING |
+| `plan_date` | DATE |
+| `forecast_qty` | INT64 |
+| `recommended_qty` | INT64 |
+| `priority` | STRING |
+
+### `<project>.<dataset>.cu03_kpis_operativos`
+
+| Campo | Tipo y restricción |
+|---|---|
+| `scenario_id` | STRING |
+| `period_date` | DATE |
+| `channel` | STRING |
+| `orders` | INT64 |
+| `units` | INT64 |
+| `conversion_rate` | FLOAT64 |
+| `delivery_cost` | NUMERIC |
+| `sla_rate` | FLOAT64 |
+
+### `<project>.<dataset>.cu04_alertas_mantenimiento`
+
+| Campo | Tipo y restricción |
+|---|---|
+| `scenario_id` | STRING |
+| `asset_id` | STRING |
+| `sensor_id` | STRING |
+| `warehouse_id` | STRING |
+| `anomaly_type` | STRING |
+| `severity` | STRING |
+| `metric_value` | FLOAT64 |
+| `occurred_at` | TIMESTAMP |
+
+
+**Controles de integridad:** BigQuery no garantiza unicidad mediante estas definiciones; la idempotencia se implementa en MERGE y filtros de ejecución. La nulabilidad y los esquemas reales deben contrastarse con `INFORMATION_SCHEMA.COLUMNS` cuando haya recursos desplegados.
+
+
+---
+
+## Anexo E. Contratos de archivos y procesamiento batch
+
+Fuente versionada: `automatizacion/configuracion/contratos/batch_sources.json` (v1.0). **Todos los dominios corresponden a fixtures propios ad hoc**, aunque sus nombres de productor simulen sistemas empresariales.
+
+| Dominio | Productor simulado | Entrada (payload JSON) | Clave | Destino Bronze → Silver |
+|---|---|---|---|---|
+| pedidos | Sistema de Pedidos | `order_id, order_line_id, customer_id, store_id, warehouse_id, sku_id, quantity, occurred_at` | `order_id + order_line_id` | `pedidos_raw` → `pedidos` |
+| inventario | ERP / Sistema de Inventario | `warehouse_id, store_id, sku_id, on_hand_qty, reserved_qty, effective_at` | `snapshot_id` | `inventario_raw` → `inventario` |
+| entregas | Aplicación de Almacenes | `delivery_id, order_id, store_id, region_id, promised_at, delivered_at, delivery_cost` | `delivery_id` | `entregas_raw` → `entregas` |
+| benchmark_competidores | Benchmark Competidores | `benchmark_id, competitor_id, sku_id, store_id, observed_at, competitor_price, availability, source_uri` | `benchmark_id` | `benchmark_competidores_raw` → `benchmark_competidores` |
+| eventos_locales | Eventos Locales | `local_event_id, store_id, event_type, start_at, end_at, impact_score, source_uri` | `local_event_id` | `eventos_locales_raw` → `eventos_locales` |
+| redes_sociales | Redes Sociales | `post_id, platform, published_at, sku_id, sentiment_score, engagement_count, text_hash, source_uri` | `post_id` | `redes_sociales_raw` → `redes_sociales` |
+
+### E.1 Envelope físico Bronze para lotes
+
+Las tablas `*_raw` usan el mismo esquema:
+
+| Campo | Tipo | Significado |
 |---|---|---|
-| CU01 riesgo de quiebre | Insights/API | correlación escenario, SKU y tienda |
-| CU02 reposición | API/planificación | escenario, SKU, almacén, fecha y versión |
-| CU03 KPIs | API/reporting | periodo, canal y métricas reconciliadas |
-| CU04 mantenimiento | API/operación | activo, sensor, severidad y tiempo |
-| Operational Mart | consultas transversales | fuente, modo de ingesta y entidad |
-| Forecast features/predictions | CU02 | versión, horizonte, training_run_id |
+| batch_id | STRING NOT NULL | ejecución lógica |
+| file_id | STRING NOT NULL | identificador de archivo |
+| source_file_uri | STRING NOT NULL | URI de procedencia |
+| source_system | STRING NOT NULL | productor simulado |
+| source_row_number | INT64 NOT NULL | fila de origen |
+| ingested_at | TIMESTAMP NOT NULL | hora de ingesta |
+| effective_at | TIMESTAMP | vigencia del dato |
+| record_hash | STRING NOT NULL | huella del registro |
+| payload_json | JSON NOT NULL | contenido original |
+| is_valid | BOOL NOT NULL | aceptación de entrada |
+| error_reason | STRING | detalle de rechazo |
 
-Cada producto requiere DDL, grano, claves, medidas, consulta SQL, periodicidad, reglas de actualización y evidencia de al menos una fila de prueba. Evitar afirmar un esquema estrella si el modelo físico no lo implementa.
+### E.2 Ejemplo de transformación física: inventario
 
-## Anexo H. Seguridad y operación
+**Input:** `Bronze.inventario_raw.payload_json` con `warehouse_id`, `store_id`, `sku_id`, `on_hand_qty`, `reserved_qty`. **Transformación:** `SAFE_CAST` de cantidades a INT64, derivación de `snapshot_id=batch_id:file_id:source_row_number`, evaluación `on_hand_qty >= reserved_qty`. **Output:** `Silver.inventario(snapshot_id, warehouse_id, store_id, sku_id, on_hand_qty, reserved_qty, effective_at, quality_status)`. **Persistencia:** `MERGE` por snapshot_id.
 
-Documentar identidades worker/workflow/API, permisos IAM efectivos, región de KMS, referencias Secret Manager, configuración DLP, Logging sink, Audit Store, métricas y SLO. Distinguir **configuración declarada**, **despliegue** y **prueba de funcionamiento**. No incluir secretos ni tokens. El SLO de disponibilidad 99 % es objetivo, no cumplimiento medido.
+**Advertencia de calidad:** el SQL revisado asigna `quality_status='INVALID'` cuando falla la regla, pero el `MERGE` no descarta automáticamente la fila inválida; el filtrado a `VALID` se realiza en los productos Gold examinados.
 
-## Anexo I. Pruebas y evidencias
 
-El catálogo de evidencias en `../assets/evidencia/` contiene las referencias visuales de cada control. Las figuras de reserva no sustituyen las capturas de ejecución ni los registros de prueba. Cada caso debe registrar: identificador, objetivo, precondiciones, entrada, comandos/SQL, resultado esperado, resultado observado, captura, fecha, entorno y conclusión. Las pruebas se organizan por ingesta continua, procesamiento batch, transformación, integración y modelado analítico.
+---
 
-## Anexo J. Referencias y artefactos
+## Anexo F. Mapeo de transformaciones y reglas de calidad
 
-- [Informe de arquitectura de referencia](https://github.com/Codenid/lumina-retail-data-platform/blob/main/docs/report/Lumina_Retail_Informe.pdf).
-- `automatizacion/configuracion/runbook.json` y `automatizacion/scripts/00_runbook.sh`.
-- `docs/operacion/runbooks/` para verificadores y operación.
-- `soluciones/` para pipelines, API y productos desplegables.
-- `../assets/arquitectura/` para ArchiMate; `../assets/miniportadas/` para ilustraciones; `../assets/evidencia/` para capturas.
+Fuente: `automatizacion/scripts/57_curar_seis_fuentes_y_gold.sh`.
 
-**Gestión de configuración:** el inventario de recursos, contratos, DDL y despliegues se mantiene trazable con la configuración de la plataforma y sus registros operativos.
+| Input Bronze | Transformación implementada | Output Silver | Regla de calidad |
+|---|---|---|---|
+| pedidos_raw.payload_json | JSON_VALUE + SAFE_CAST(quantity AS INT64), MERGE por order_id/order_line_id | pedidos | is_valid y quantity > 0 |
+| inventario_raw.payload_json | SAFE_CAST cantidades, snapshot_id derivado, MERGE | inventario | on_hand_qty >= reserved_qty |
+| entregas_raw.payload_json | SAFE_CAST fechas y delivery_cost, MERGE por delivery_id | entregas | delivery_cost >= 0 |
+| benchmark_competidores_raw.payload_json | SAFE_CAST observed_at y competitor_price | benchmark_competidores | competitor_price > 0 |
+| eventos_locales_raw.payload_json | SAFE_CAST timestamps e impact_score | eventos_locales | impact_score entre 0 y 1 |
+| redes_sociales_raw.payload_json | SAFE_CAST published_at, sentiment_score, engagement_count | redes_sociales | sentiment_score entre -1 y 1; engagement_count >= 0 |
+
+**Semántica de salida:** los seis `MERGE` insertan registros nuevos y no incluyen `WHEN MATCHED THEN UPDATE`. El control de idempotencia depende de las claves del ON y de la calidad del conjunto fuente; los scripts no demuestran por sí mismos deduplicación previa cuando hay múltiples filas fuente con la misma clave.
+
+### F.1 Transformación Silver → Gold
+
+| Input | Operación SQL observada | Output |
+|---|---|---|
+| inventario + pedidos | JOIN por sku_id; cálculo de disponibilidad y riesgo | CU01 riesgo de quiebre |
+| pedidos + inventario | JOIN por sku_id; SUM(quantity), diferencia contra disponible | CU02 reposición |
+| pedidos LEFT JOIN entregas | COUNT DISTINCT, SUM, costo y tasa de entrega | CU03 KPIs |
+| pedidos + inventario | proyección por entity_type, entity_id y ingestion_mode | operational_mart |
+
+**Riesgo técnico identificado:** los JOIN por `sku_id` sin otras claves de ubicación o control de cardinalidad pueden multiplicar filas cuando existen múltiples tiendas, almacenes o snapshots para el mismo SKU. Antes de certificar métricas, se deben ejecutar pruebas de cardinalidad y conciliación por escenario.
+
+
+---
+
+## Anexo G. Contratos de productos analíticos Gold
+
+| Producto | Input | Regla de negocio | Output | Consumidor |
+|---|---|---|---|---|
+| CU01 | Silver inventario + pedidos válidos | disponible = on_hand_qty − reserved_qty; umbral 12 para recomendación | scenario_id, sku_id, store_id, risk_score, available_qty, recommended_action, as_of | API Insights |
+| CU02 | Silver pedidos + inventario válidos | SUM(quantity) y faltante contra disponible | scenario_id, sku_id, warehouse_id, plan_date, forecast_qty, recommended_qty, priority | API inventory-plans |
+| CU03 | Silver pedidos + entregas | conteos, unidades, costo, SLA calculado | scenario_id, period_date, channel, orders, units, conversion_rate, delivery_cost, sla_rate | API kpis |
+| CU04 | telemetría de activos | reglas de mantenimiento del pipeline correspondiente | scenario_id, asset_id, sensor_id, warehouse_id, anomaly_type, severity, metric_value, occurred_at | API maintenance-risks |
+| insights_streaming | evento del tópico Insights | clasificador/generador de insights | insight_id, event_id, insight_type, sku_id, store_id, score, created_at, status | API Insights |
+| procesamiento_auditoria | eventos procesados | registro de procesamiento | audit_id, event_id, component, status, observed_at, detail | auditoría |
+
+**Control de alcance:** las transformaciones exactas de CU04 e Insights se documentarán a partir de sus respectivos pipelines; no se atribuyen al script batch 57, que materializa CU01–CU03 y Operational Mart.
+
+
+---
+
+## Anexo H. Metadatos, linaje y controles operativos
+
+| Flujo | Correlación | Punto de entrada | Punto de salida | Verificación |
+|---|---|---|---|---|
+| Evento | event_id, trace_id | Pub/Sub | Bronze raw, Silver | coincidencia de identificador |
+| Batch | batch_id, file_id, source_row_number | GCS Landing | Bronze/Silver/Gold | conciliación de filas |
+| Forecast | DEMO_RUN_ID, model_version | Gold features | predictions, plan y model.json | versión y horizonte |
+| API | revisión Cloud Run, scenario_id | GET autenticado | JSON de tablas Gold | HTTP y count |
+| Auditoría | event_id, audit_id | pipeline Insights | procesamiento_auditoria | evento y estado |
+
+**Seguridad:** la API Cloud Run se despliega con `--no-allow-unauthenticated`, cuenta de servicio dedicada, CPU 1, memoria 512 MiB, concurrencia 4, timeout 90 s, min 0 y max 2 instancias. El verificador 66 comprueba identidad, revisión READY, rechazo anónimo y cuatro respuestas de negocio.
+
+
+---
+
+## Anexo I. Pruebas de contrato e integración
+
+| ID | Input de prueba | Resultado esperado | Evidencia técnica |
+|---|---|---|---|
+| EVT-01 | evento del contrato JSON con event_id único | publicación Pub/Sub y registro raw | `08_publicar_evento.sh` + consulta Bronze |
+| EVT-02 | mismo evento | registro Silver con correlación | `09_verificar_silver_y_bronze.sh` |
+| BAT-01 | fixtures ad hoc de seis dominios | carga raw con batch_id y conteos | scripts 55–56 |
+| BAT-02 | batch_id anterior | seis entidades Silver tipadas y calidad | script 57 y consultas |
+| BAT-03 | Silver válida | CU01–CU03 y Operational Mart | scripts 57–58 |
+| API-01 | GET /api/v1/kpis?limit=5 autenticado | HTTP 200, count >= 1 y source_table correcto | script 66 |
+| API-02 | GET /api/v1/insights?limit=5 | HTTP 200; arrays con datos de Insights y riesgos | script 66 |
+| API-03 | GET anónimo a /api/v1/insights | rechazo 401/403/404 según verificador | script 66 |
+| API-04 | GET con limit=101 | HTTP 400 invalid_query | prueba de contrato |
+
+**Resultado observado:** se consigna mediante el estado generado por cada ejecución; esta especificación no declara resultados de GCP que no se hayan consultado directamente.
+
+
+---
+
+## Anexo J. Referencias técnicas y fuentes de verdad
+
+| Artefacto | Propósito |
+|---|---|
+| `docs/arquitectura/contrato-evento-original.json` | ejemplo real de envelope y payload de pedido |
+| `automatizacion/configuracion/contratos/batch_sources.json` | seis contratos de entrada batch |
+| `automatizacion/configuracion/contratos/gold_tables.sql` | DDL de CU01–CU04 |
+| `automatizacion/scripts/04_crear_bigquery.sh` | DDL Bronze/Silver y esquema export Pub/Sub |
+| `automatizacion/scripts/31_crear_tablas_batch_nuevas.sh` | DDL Silver de dominios contextuales |
+| `automatizacion/scripts/44_crear_tablas_insights.sh` | DDL Insights y auditoría |
+| `automatizacion/scripts/57_curar_seis_fuentes_y_gold.sh` | reglas SQL de curación y Gold |
+| `soluciones/api-insights/main.py` | métodos, filtros, respuestas y errores REST |
+| `automatizacion/scripts/05_crear_topicos_y_suscripciones.sh` | topología Pub/Sub, BigQuery y GCS |
+| `automatizacion/scripts/65_desplegar_api_retailsmart.sh` | configuración de despliegue Cloud Run |
+| `automatizacion/scripts/66_verificar_api_retailsmart.sh` | pruebas funcionales API |
+| `automatizacion/configuracion/runbook.json` | secuencia operativa y dependencias |
+
+Los contratos se mantienen vinculados al código fuente versionado. Los cambios incompatibles deben reflejarse en la versión contractual, el diccionario físico y las pruebas.
