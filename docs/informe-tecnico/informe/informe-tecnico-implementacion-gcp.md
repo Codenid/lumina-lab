@@ -26,7 +26,7 @@
 
 ![Apertura visual del capítulo](../assets/miniportadas/01-resumen-ejecutivo.svg)
 
-### Decisión ejecutiva y alcance
+### Visión ejecutiva y alcance
 
 RetailSmart Global necesita transformar señales fragmentadas de pedidos, inventario, logística y telemetría en información trazable para decisiones operativas. Lumina Retail implementa una plataforma analítica desacoplada de los sistemas transaccionales. La solución integra **pipelines de transformación, procesamiento híbrido por lotes y en tiempo real y productos analíticos**, con trazabilidad entre fuentes, procesamiento y consumo.
 
@@ -37,7 +37,7 @@ RetailSmart Global necesita transformar señales fragmentadas de pedidos, invent
 | Integración de datos | Normalización, reglas de calidad y joins por claves sustentadas | Evidencia SQL y resultado antes/después |
 | Analítica | Productos Gold, Operational Mart, vistas | Esquemas, granularidad y consultas reproducibles |
 
-**Límites:** productores empresariales, Looker y aplicaciones consumidoras externas no se aprovisionan como parte de esta implementación. La predicción de demanda se incorpora como una capacidad analítica de referencia. Los beneficios operativos se evalúan contra una línea base y resultados reproducibles.
+**Límites de la solución:** los sistemas productores empresariales y las aplicaciones consumidoras externas permanecen desacoplados de la plataforma. La predicción de demanda se incorpora como una capacidad analítica de referencia. Los beneficios operativos se evalúan contra una línea base y resultados reproducibles.
 
 **Criterio de aceptación:** trazabilidad verificable entre los eventos o archivos de origen, las transformaciones aplicadas y los productos de datos publicados. Los resultados de ejecución se consignan en el capítulo 11.
 
@@ -325,7 +325,7 @@ Las vistas deben explicitar columnas, filtros, fuentes Gold y vigencia. El consu
 
 ### Contratos de consumo
 
-Cloud Run expone una API privada con autenticación IAM, mínimo cero instancias, máximo dos y límite documentado de 100 filas por solicitud. Los consumidores externos no forman parte del despliegue. Una respuesta de `/healthz` no demuestra la funcionalidad de las rutas de negocio.
+Cloud Run expone una API privada con autenticación IAM, mínimo cero instancias, máximo dos y límite documentado de 100 filas por solicitud. La integración con consumidores externos se gestiona mediante contratos independientes. Una respuesta de `/healthz` no demuestra la funcionalidad de las rutas de negocio.
 
 | Endpoint | Fuente | Función | Aceptación |
 |---|---|---|---|
@@ -427,7 +427,7 @@ La plataforma Lumina Retail integra procesamiento híbrido sobre BigQuery Medall
 
 **Decisiones pendientes de operación productiva:** cuotas, costos, retención, escalamiento, SLAs, gobernanza de contratos, monitoreo de calidad, consumidores externos y dimensionamiento. No se extrapolan resultados de una demo con un worker a campañas masivas.
 
-### Próxima evolución recomendada
+### Hoja de evolución
 
 Priorizar (1) cerrar trazabilidad streaming y batch con evidencias; (2) consolidar diccionarios físicos y contratos versionados; (3) automatizar pruebas de calidad y conciliación; (4) medir latencia/costo bajo escenarios controlados; (5) incorporar consumidores externos con contratos independientes. Las decisiones de arquitectura y sus modificaciones se mantendrán en el registro de decisiones técnicas.
 
@@ -473,11 +473,11 @@ El inventario organiza los servicios de la plataforma por responsabilidad, contr
 | `/api/v1/inventory-plans` | verificar en código | IAM privada | CU02 | JSON y errores: verificar implementación |
 | `/api/v1/maintenance-risks` | verificar en código | IAM privada | CU04 | JSON y errores: verificar implementación |
 
-**Campos contractuales a extraer del código:** verbo HTTP, parámetros de consulta y sus tipos, valores por defecto, filtros, límite máximo de 100 filas documentado, paginación si existe, forma exacta del JSON, códigos de error y roles de invocación. **Se documentan únicamente** respuestas de ejemplo ni códigos no verificados.
+**Campos del contrato de servicio:** verbo HTTP, parámetros de consulta y sus tipos, valores por defecto, filtros, límite máximo de 100 filas documentado, paginación si existe, forma exacta del JSON, códigos de error y roles de invocación. **Se documentan únicamente** respuestas de ejemplo ni códigos no verificados.
 
 ## Anexo D. Diccionario de datos
 
-**Ficha obligatoria por cada tabla física:** dataset, nombre, descripción, grano, origen, clave natural/técnica, partición, clustering, retención, propietario, fecha de actualización y DDL versionado. Cada columna deberá incluir **nombre, tipo BigQuery, modo NULLABLE/REQUIRED/REPEATED, descripción, transformación, fuente, sensibilidad y regla de calidad**. El siguiente índice agrupa los dominios de datos; los esquemas físicos se gestionan mediante los DDL y el catálogo de BigQuery.
+**Estructura del diccionario por cada tabla física:** dataset, nombre, descripción, grano, origen, clave natural/técnica, partición, clustering, retención, propietario, fecha de actualización y DDL versionado. Cada columna deberá incluir **nombre, tipo BigQuery, modo NULLABLE/REQUIRED/REPEATED, descripción, transformación, fuente, sensibilidad y regla de calidad**. El siguiente índice agrupa los dominios de datos; los esquemas físicos se gestionan mediante los DDL y el catálogo de BigQuery.
 
 | Dataset lógico | Tablas / familias identificadas | Grano y clave a contrastar |
 |---|---|---|
@@ -534,11 +534,11 @@ Documentar identidades worker/workflow/API, permisos IAM efectivos, región de K
 
 ## Anexo I. Pruebas y evidencias
 
-El catálogo de evidencias en `../assets/evidencia/` contiene las referencias visuales de cada control. Las figuras de reserva no sustituyen las capturas de ejecución ni los registros de prueba. Cada caso debe registrar: identificador, objetivo, precondiciones, entrada, comandos/SQL, resultado esperado, resultado observado, captura, fecha, entorno y conclusión. Priorizar pruebas P2-STR, P2-BAT, P2-TRF, P2-INT y P2-MOD.
+El catálogo de evidencias en `../assets/evidencia/` contiene las referencias visuales de cada control. Las figuras de reserva no sustituyen las capturas de ejecución ni los registros de prueba. Cada caso debe registrar: identificador, objetivo, precondiciones, entrada, comandos/SQL, resultado esperado, resultado observado, captura, fecha, entorno y conclusión. Las pruebas se organizan por ingesta continua, procesamiento batch, transformación, integración y modelado analítico.
 
 ## Anexo J. Referencias y artefactos
 
-- [P1 — Informe de Arquitectura](https://github.com/Codenid/lumina-retail-data-platform/blob/main/docs/report/Lumina_Retail_Informe.pdf).
+- [Informe de arquitectura de referencia](https://github.com/Codenid/lumina-retail-data-platform/blob/main/docs/report/Lumina_Retail_Informe.pdf).
 - `automatizacion/configuracion/runbook.json` y `automatizacion/scripts/00_runbook.sh`.
 - `docs/operacion/runbooks/` para verificadores y operación.
 - `soluciones/` para pipelines, API y productos desplegables.
