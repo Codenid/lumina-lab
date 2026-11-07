@@ -430,17 +430,19 @@ Las respuestas y los errores se derivan de `soluciones/api-insights/main.py`; el
 
 ### Matriz de aceptación de la solución
 
-| Prueba | Entrada | Validación | Evidencia | Estado documental |
-|---|---|---|---|---|
-| VAL-STR-01 | order_created | mismo event_id Bronze/Silver | EV-STR-03 | Evidencia de ejecución no incorporada |
-| VAL-STR-02 | evento Insight | mismo event_id en dos Gold | EV-STR-04 | Evidencia de ejecución no incorporada |
-| VAL-BAT-01 | archivo batch | Bronze → Silver → Gold/Mart | EV-BAT-03 | Evidencia de ejecución no incorporada |
-| VAL-TRF-01 | datos con defectos | tipado, rechazo y deduplicación | SQL y resultado antes/después | Resultado de prueba no incorporado |
-| VAL-INT-01 | dominios ad hoc | joins por clave sustentada | SQL y resultado integrado | Resultado de prueba no incorporado |
-| VAL-MOD-01 | producto Gold | grano, medidas y consulta | EV-GOL-02 | Evidencia de ejecución no incorporada |
-| VAL-API-01 | llamada autenticada | HTTP 200 y respuesta válida | EV-API-02 | Evidencia de ejecución no incorporada |
+| Prueba | Criterio de aceptación | Evidencia esperada | IDs / conteos observados | Estado | Observación |
+|---|---|---|---|---|---|
+| VAL-STR-01 | Mismo `event_id` en Bronze y Silver | EV-STR-03 | No observados | BLOQUEADO | La consola GCP no estuvo disponible; no se ejecutó SQL |
+| VAL-STR-02 | Mismo `event_id` en Insights y auditoría Gold | EV-STR-04 | No observados | BLOQUEADO | La consola GCP no estuvo disponible; no se ejecutó SQL |
+| VAL-BAT-01 | Recorrido Bronze → Silver → Gold/Mart con `batch_id` | EV-BAT-03 | No observados | BLOQUEADO | No se inspeccionaron tablas ni ejecuciones |
+| VAL-TRF-01 | Tipado, rechazo y deduplicación | SQL y resultado antes/después | No observados | BLOQUEADO | No se inspeccionaron resultados de ejecución |
+| VAL-INT-01 | Joins por claves sustentadas | SQL y resultado integrado | No observados | BLOQUEADO | No se inspeccionaron resultados ni cardinalidades |
+| VAL-MOD-01 | Producto Gold con grano y medidas validados | EV-GOL-02 | No observados | BLOQUEADO | No se consultaron vistas ni resultados |
+| VAL-API-01 | API autenticada con respuesta HTTP 200 válida | EV-API-02 | No observados | BLOQUEADO | No se comprobó servicio ni se invocaron rutas |
 
-**Estados de seguimiento:** diseñado, codificado, desplegado, ejecutado, verificado, bloqueado y no verificado. Cada acta conserva `DEMO_RUN_ID`, `event_id`, `batch_id`, `job_id`, fecha y región en cada acta.
+**Estado del levantamiento (7 de noviembre de 2026):** se intentó abrir Google Cloud Console en el navegador conectado y la página devolvió **“Site Unavailable”**. En este entorno tampoco están disponibles los ejecutables `gcloud` ni `bq`. Por ello no fue posible inspeccionar recursos, logs, métricas o datos, y no se capturaron PNG de GCP. Las 16 referencias SVG continúan siendo plantillas; no acreditan despliegue ni ejecución. No se ejecutaron consultas, pipelines, publicaciones, despliegues ni cambios de infraestructura. Los IDs, conteos, estados y resultados de GCP quedan como **no observados**; las pruebas figuran BLOQUEADO porque el acceso impidió ejecutarlas.
+
+Para reanudar el levantamiento se requiere una sesión de consola GCP accesible o un entorno autenticado con `gcloud` y `bq` disponibles y permisos de lectura sobre el proyecto `retailsmart-bigdata`. Cualquier consulta o acción no incluida en lectura seguirá sujeta al control de costos y autorización definido en este informe.
 
 ### Procedimiento reproducible
 
