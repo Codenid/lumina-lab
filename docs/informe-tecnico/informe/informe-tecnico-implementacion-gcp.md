@@ -24,7 +24,7 @@
 
 ## 1. Resumen ejecutivo
 
-![Apertura visual del capítulo](../assets/miniportadas/01-resumen-ejecutivo.svg)
+![Apertura visual del capítulo](../assets/miniportadas/01-resumen-ejecutivo.png)
 
 ### Visión ejecutiva y alcance
 
@@ -46,7 +46,7 @@ RetailSmart Global necesita transformar señales fragmentadas de pedidos, invent
 
 ## 2. Contexto empresarial y objetivos
 
-![Apertura visual del capítulo](../assets/miniportadas/02-contexto-objetivos.svg)
+![Apertura visual del capítulo](../assets/miniportadas/02-contexto-objetivos.png)
 
 ### Situación empresarial
 
@@ -70,7 +70,7 @@ La implementación se organiza en tres capacidades principales: limpieza, enriqu
 
 ## 3. Arquitectura de solución
 
-![Apertura visual del capítulo](../assets/miniportadas/03-arquitectura-solucion.svg)
+![Apertura visual del capítulo](../assets/miniportadas/03-arquitectura-solucion.png)
 
 ### Arquitectura de referencia y arquitectura implementada
 
@@ -101,7 +101,7 @@ La vista ArchiMate describe los componentes, integraciones y responsabilidades d
 
 ## 4. Fuentes, contratos y arquitectura de datos
 
-![Apertura visual del capítulo](../assets/miniportadas/04-fuentes-contratos.svg)
+![Apertura visual del capítulo](../assets/miniportadas/04-fuentes-contratos.png)
 
 ### Fuentes propias y contratos de generación
 
@@ -167,7 +167,7 @@ El diccionario físico completo se mantiene en el anexo D.
 
 ## 5. Implementación de pipelines streaming
 
-![Apertura visual del capítulo](../assets/miniportadas/05-streaming.svg)
+![Apertura visual del capítulo](../assets/miniportadas/05-streaming.png)
 
 ### Bifurcación del tópico de entrada
 
@@ -222,7 +222,7 @@ El segundo tópico y su Dataflow producen `Gold.insights_streaming` y `Gold.proc
 
 ## 6. Implementación de pipelines batch
 
-![Apertura visual del capítulo](../assets/miniportadas/06-batch.svg)
+![Apertura visual del capítulo](../assets/miniportadas/06-batch.png)
 
 ### Recorrido de procesamiento por lotes
 
@@ -275,7 +275,7 @@ Los campos físicos del envelope Bronze, las claves de cada dominio y los esquem
 
 ## 7. Transformación, calidad e integración
 
-![Apertura visual del capítulo](../assets/miniportadas/07-transformacion-calidad.svg)
+![Apertura visual del capítulo](../assets/miniportadas/07-transformacion-calidad.png)
 
 ### Reglas de transformación verificables
 
@@ -312,7 +312,7 @@ Los cruces entre pedidos, inventario, entregas y datos contextuales se realizan 
 
 ## 8. Modelado analítico y productos Gold
 
-![Apertura visual del capítulo](../assets/miniportadas/08-modelado-gold.svg)
+![Apertura visual del capítulo](../assets/miniportadas/08-modelado-gold.png)
 
 ### Modelo analítico y granularidad
 
@@ -352,7 +352,7 @@ Las vistas deben explicitar columnas, filtros, fuentes Gold y vigencia. El consu
 
 ## 9. Exposición y consumo de datos
 
-![Apertura visual del capítulo](../assets/miniportadas/09-consumo-api.svg)
+![Apertura visual del capítulo](../assets/miniportadas/09-consumo-api.png)
 
 ### Contratos de consumo
 
@@ -393,7 +393,7 @@ Las respuestas y los errores se derivan de `soluciones/api-insights/main.py`; el
 
 ## 10. Seguridad, gobierno y observabilidad
 
-![Apertura visual del capítulo](../assets/miniportadas/10-seguridad-observabilidad.svg)
+![Apertura visual del capítulo](../assets/miniportadas/10-seguridad-observabilidad.png)
 
 ### Controles transversales
 
@@ -426,7 +426,7 @@ Las respuestas y los errores se derivan de `soluciones/api-insights/main.py`; el
 
 ## 11. Validación end-to-end y resultados
 
-![Apertura visual del capítulo](../assets/miniportadas/11-validacion-e2e.svg)
+![Apertura visual del capítulo](../assets/miniportadas/11-validacion-e2e.png)
 
 ### Matriz de aceptación de la solución
 
@@ -458,7 +458,7 @@ Las figuras SVG grises señalan el archivo PNG real esperado y son **placeholder
 
 ## 12. Conclusiones y hoja de evolución
 
-![Apertura visual del capítulo](../assets/miniportadas/12-evolucion.svg)
+![Apertura visual del capítulo](../assets/miniportadas/12-evolucion.png)
 
 ### Resultado documental y límites
 
