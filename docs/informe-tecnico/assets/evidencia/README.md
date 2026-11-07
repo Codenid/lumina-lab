@@ -1,7 +1,7 @@
 # Capturas reales de GCP
 
-Esta carpeta contiene evidencia operativa, no diagramas ni imágenes simuladas.
-Cada captura debe mostrar el proyecto correcto, el servicio, el recurso y la
+Esta carpeta contiene **plantillas SVG grises de evidencia pendiente**, no capturas reales. Cada archivo SVG señala el nombre del PNG que debe obtenerse en GCP. Las plantillas no acreditan despliegue, ejecución ni aceptación. Cuando se obtenga la captura real, guardarla como PNG del mismo nombre base y actualizar el vínculo en el Markdown.
+Cada captura PNG definitiva debe mostrar el proyecto correcto, el servicio, el recurso y la
 señal que permite validar la capacidad. Ocultar secretos, tokens, correos
 personales, IDs de sesión y payloads sensibles.
 
