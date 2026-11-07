@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/integrar-miniportadas.yml'
+      - 'docs/informe-tecnico/assets/miniportadas/lumina_integracion_miniportadas_v2.zip'
   workflow_dispatch:
 
 permissions:
@@ -21,7 +22,8 @@ jobs:
         run: |
           set -euo pipefail
           ASSETS="docs/informe-tecnico/assets/miniportadas"
-          ZIP="$ASSETS/lumina_integracion_miniportadas.zip"
+          ZIP="$ASSETS/lumina_integracion_miniportadas_v2.zip"
+          if [ ! -f "$ZIP" ]; then ZIP="$ASSETS/lumina_integracion_miniportadas.zip"; fi
           REPORT="docs/informe-tecnico/informe/informe-tecnico-implementacion-gcp.md"
           test -f "$ZIP"
           test -f "$REPORT"
@@ -38,7 +40,8 @@ jobs:
           p = Path("docs/informe-tecnico/informe/informe-tecnico-implementacion-gcp.md")
           content = p.read_text(encoding="utf-8")
           updated, n = re.subn(r"(\.\./assets/miniportadas/\d{2}-[a-z0-9-]+)\.svg", r"\1.png", content)
-          assert n == 12, f"Se esperaban 12 referencias SVG; encontradas {n}"
+          assert n in (0, 12), f"Referencias SVG inesperadas: {n}"
+          assert len(re.findall(r"\.\./assets/miniportadas/\d{2}-[a-z0-9-]+\.png", updated)) == 12, "Se esperaban 12 referencias PNG"
           p.write_text(updated, encoding="utf-8")
           PY
           test "$(find "$ASSETS" -maxdepth 1 -name '*.png' | wc -l)" -ge 12
