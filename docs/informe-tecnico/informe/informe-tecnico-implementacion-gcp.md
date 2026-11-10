@@ -91,7 +91,7 @@ La vista ArchiMate describe los componentes, integraciones y responsabilidades d
 
 **Figura EV-ARC-01 — Inventario de servicios GCP**
 
-![Vista de Inventario de servicios GCP](../assets/evidencia/01-fundacion/01-inventario-servicios.svg)
+![Vista de Inventario de servicios GCP](../assets/evidencia/01-fundacion/01-inventario-servicios.png)
 
 *Figura de referencia operativa. Vista prevista: proyecto, región, recursos reales y estado. Archivo de evidencia: `01-fundacion/01-inventario-servicios.png`.*
 
@@ -151,13 +151,13 @@ El diccionario físico completo se mantiene en el anexo D.
 
 **Figura EV-DAT-01 — Buckets de Landing y artefactos**
 
-![Vista de Buckets de Landing y artefactos](../assets/evidencia/01-fundacion/02-storage-buckets.svg)
+![Vista de Buckets de Landing y artefactos](../assets/evidencia/01-fundacion/02-storage-buckets.png)
 
 *Figura de referencia operativa. Vista prevista: ubicación, nombres y políticas de acceso sin exponer secretos. Archivo de evidencia: `01-fundacion/02-storage-buckets.png`.*
 
 **Figura EV-DAT-02 — Datasets Bronze, Silver y Gold**
 
-![Vista de Datasets Bronze, Silver y Gold](../assets/evidencia/01-fundacion/03-bigquery-medallion.svg)
+![Vista de Datasets Bronze, Silver y Gold](../assets/evidencia/01-fundacion/03-bigquery-medallion.png)
 
 *Figura de referencia operativa. Vista prevista: datasets reales, tablas y región. Archivo de evidencia: `01-fundacion/03-bigquery-medallion.png`.*
 
@@ -194,25 +194,25 @@ El segundo tópico y su Dataflow producen `Gold.insights_streaming` y `Gold.proc
 
 **Figura EV-STR-01 — Tópico y suscripciones**
 
-![Vista de Tópico y suscripciones](../assets/evidencia/02-streaming/01-pubsub-topico-suscripciones.svg)
+![Vista de Tópico y suscripciones](../assets/evidencia/02-streaming/01-pubsub-topico-suscripciones.png)
 
 *Figura de referencia operativa. Vista prevista: nombre del tópico y ramas independientes de raw y Dataflow. Archivo de evidencia: `02-streaming/01-pubsub-topico-suscripciones.png`.*
 
 **Figura EV-STR-02 — Ejecución Dataflow**
 
-![Vista de Ejecución Dataflow](../assets/evidencia/02-streaming/02-dataflow-job.svg)
+![Vista de Ejecución Dataflow](../assets/evidencia/02-streaming/02-dataflow-job.png)
 
 *Figura de referencia operativa. Vista prevista: job, región, worker y estado terminal. Archivo de evidencia: `02-streaming/02-dataflow-job.png`.*
 
 **Figura EV-STR-03 — Evento correlacionado Bronze/Silver**
 
-![Vista de Evento correlacionado Bronze/Silver](../assets/evidencia/02-streaming/03-bq-bronze-silver-evento.svg)
+![Vista de Evento correlacionado Bronze/Silver](../assets/evidencia/02-streaming/03-bq-bronze-silver-evento.png)
 
 *Figura de referencia operativa. Vista prevista: mismo event_id y order_id en las consultas. Archivo de evidencia: `02-streaming/03-bq-bronze-silver-evento.png`.*
 
 **Figura EV-STR-04 — Insights y auditoría**
 
-![Vista de Insights y auditoría](../assets/evidencia/03-insights/01-bq-insights-auditoria.svg)
+![Vista de Insights y auditoría](../assets/evidencia/03-insights/01-bq-insights-auditoria.png)
 
 *Figura de referencia operativa. Vista prevista: mismo event_id en ambas tablas Gold. Archivo de evidencia: `03-insights/01-bq-insights-auditoria.png`.*
 
@@ -253,19 +253,19 @@ Los campos físicos del envelope Bronze, las claves de cada dominio y los esquem
 
 **Figura EV-BAT-01 — Landing y transferencia**
 
-![Vista de Landing y transferencia](../assets/evidencia/04-batch/01-landing-transfer.svg)
+![Vista de Landing y transferencia](../assets/evidencia/04-batch/01-landing-transfer.png)
 
 *Figura de referencia operativa. Vista prevista: objeto fuente, trabajo y transferencia completada. Archivo de evidencia: `04-batch/01-landing-transfer.png`.*
 
 **Figura EV-BAT-02 — Ejecución Workflows**
 
-![Vista de Ejecución Workflows](../assets/evidencia/04-batch/02-workflow-execution.svg)
+![Vista de Ejecución Workflows](../assets/evidencia/04-batch/02-workflow-execution.png)
 
 *Figura de referencia operativa. Vista prevista: revisión, cuenta y ejecución SUCCEEDED. Archivo de evidencia: `04-batch/02-workflow-execution.png`.*
 
 **Figura EV-BAT-03 — Recorrido batch a Mart**
 
-![Vista de Recorrido batch a Mart](../assets/evidencia/04-batch/03-bq-batch-mart.svg)
+![Vista de Recorrido batch a Mart](../assets/evidencia/04-batch/03-bq-batch-mart.png)
 
 *Figura de referencia operativa. Vista prevista: mismo batch_id en Bronze, Silver, Gold y Mart. Archivo de evidencia: `04-batch/03-bq-batch-mart.png`.*
 
@@ -336,13 +336,13 @@ Las vistas deben explicitar columnas, filtros, fuentes Gold y vigencia. El consu
 
 **Figura EV-GOL-01 — Forecast, predicción y reposición**
 
-![Vista de Forecast, predicción y reposición](../assets/evidencia/05-forecast/01-features-predicciones-plan.svg)
+![Vista de Forecast, predicción y reposición](../assets/evidencia/05-forecast/01-features-predicciones-plan.png)
 
 *Figura de referencia operativa. Vista prevista: identificador de corrida en features, predicción, plan y artefacto. Archivo de evidencia: `05-forecast/01-features-predicciones-plan.png`.*
 
 **Figura EV-GOL-02 — Vistas analíticas Gold**
 
-![Vista de Vistas analíticas Gold](../assets/evidencia/06-consumo/03-bigquery-vistas.svg)
+![Vista de Vistas analíticas Gold](../assets/evidencia/06-consumo/03-bigquery-vistas.png)
 
 *Figura de referencia operativa. Vista prevista: vistas y consultas con resultados. Archivo de evidencia: `06-consumo/03-bigquery-vistas.png`.*
 
@@ -377,13 +377,13 @@ Las respuestas y los errores se derivan de `soluciones/api-insights/main.py`; el
 
 **Figura EV-API-01 — Servicio Cloud Run privado**
 
-![Vista de Servicio Cloud Run privado](../assets/evidencia/06-consumo/01-cloud-run-servicio.svg)
+![Vista de Servicio Cloud Run privado](../assets/evidencia/06-consumo/01-cloud-run-servicio.png)
 
 *Figura de referencia operativa. Vista prevista: revisión READY, región, identidad y autenticación. Archivo de evidencia: `06-consumo/01-cloud-run-servicio.png`.*
 
 **Figura EV-API-02 — Respuestas de negocio**
 
-![Vista de Respuestas de negocio](../assets/evidencia/06-consumo/02-api-rutas.svg)
+![Vista de Respuestas de negocio](../assets/evidencia/06-consumo/02-api-rutas.png)
 
 *Figura de referencia operativa. Vista prevista: HTTP 200 autenticado de las cuatro rutas. Archivo de evidencia: `06-consumo/02-api-rutas.png`.*
 
@@ -410,15 +410,13 @@ Las respuestas y los errores se derivan de `soluciones/api-insights/main.py`; el
 
 **Figura EV-SEC-01 — Gobierno y cifrado**
 
-![Vista de Gobierno y cifrado](../assets/evidencia/07-controles/01-gobierno-seguridad.svg)
+![Vista de Gobierno y cifrado](../assets/evidencia/07-controles/03-seguridad-kms.png)
 
-*Figura de referencia operativa. Vista prevista: Dataplex/Lineage, KMS y Secret Manager sin secretos. Archivo de evidencia: `07-controles/01-gobierno-seguridad.png`.*
+*Captura disponible: KMS y seguridad, sin mostrar valores de secretos. Archivo: `07-controles/03-seguridad-kms.png`.*
 
 **Figura EV-SEC-02 — Auditoría y monitoreo**
 
-![Vista de Auditoría y monitoreo](../assets/evidencia/07-controles/02-auditoria-observabilidad.svg)
-
-*Figura de referencia operativa. Vista prevista: sink, Audit Store, métrica, alerta y SLO. Archivo de evidencia: `07-controles/02-auditoria-observabilidad.png`.*
+Evidencia no incluida en esta entrega.
 
 
 
@@ -432,15 +430,15 @@ Las respuestas y los errores se derivan de `soluciones/api-insights/main.py`; el
 
 | Prueba | Criterio de aceptación | Evidencia esperada | IDs / conteos observados | Estado | Observación |
 |---|---|---|---|---|---|
-| VAL-STR-01 | Mismo `event_id` en Bronze y Silver | EV-STR-03 | No observados | BLOQUEADO | La consola GCP no estuvo disponible; no se ejecutó SQL |
-| VAL-STR-02 | Mismo `event_id` en Insights y auditoría Gold | EV-STR-04 | No observados | BLOQUEADO | La consola GCP no estuvo disponible; no se ejecutó SQL |
-| VAL-BAT-01 | Recorrido Bronze → Silver → Gold/Mart con `batch_id` | EV-BAT-03 | No observados | BLOQUEADO | No se inspeccionaron tablas ni ejecuciones |
+| VAL-STR-01 | Mismo `event_id` en Bronze y Silver | EV-STR-03 | Captura cargada | DOCUMENTADO | Consulta ejecutada en BigQuery |
+| VAL-STR-02 | Mismo `event_id` en Insights y auditoría Gold | EV-STR-04 | Captura cargada | DOCUMENTADO | Consulta ejecutada en BigQuery |
+| VAL-BAT-01 | Recorrido Bronze → Silver → Gold/Mart con `batch_id` | EV-BAT-03 | Captura cargada | DOCUMENTADO | Resultado batch cargado |
 | VAL-TRF-01 | Tipado, rechazo y deduplicación | SQL y resultado antes/después | No observados | BLOQUEADO | No se inspeccionaron resultados de ejecución |
 | VAL-INT-01 | Joins por claves sustentadas | SQL y resultado integrado | No observados | BLOQUEADO | No se inspeccionaron resultados ni cardinalidades |
-| VAL-MOD-01 | Producto Gold con grano y medidas validados | EV-GOL-02 | No observados | BLOQUEADO | No se consultaron vistas ni resultados |
-| VAL-API-01 | API autenticada con respuesta HTTP 200 válida | EV-API-02 | No observados | BLOQUEADO | No se comprobó servicio ni se invocaron rutas |
+| VAL-MOD-01 | Producto Gold con grano y medidas validados | EV-GOL-02 | Captura cargada | DOCUMENTADO | Vistas Gold consultadas |
+| VAL-API-01 | API autenticada con respuesta HTTP 200 válida | EV-API-02 | Captura cargada | DOCUMENTADO | Cuatro rutas autenticadas verificadas |
 
-**Estado del levantamiento (7 de noviembre de 2026):** se intentó abrir Google Cloud Console en el navegador conectado y la página devolvió **“Site Unavailable”**. En este entorno tampoco están disponibles los ejecutables `gcloud` ni `bq`. Por ello no fue posible inspeccionar recursos, logs, métricas o datos, y no se capturaron PNG de GCP. Las 16 referencias SVG continúan siendo plantillas; no acreditan despliegue ni ejecución. No se ejecutaron consultas, pipelines, publicaciones, despliegues ni cambios de infraestructura. Los IDs, conteos, estados y resultados de GCP quedan como **no observados**; las pruebas figuran BLOQUEADO porque el acceso impidió ejecutarlas.
+**Estado de la entrega:** se incorporaron las capturas PNG disponibles en `assets/evidencia/`. Esta entrega cierra la evidencia disponible para fundación, streaming, batch, forecast, API, vistas Gold y seguridad KMS. La captura de auditoría y observabilidad no se incluye en esta etapa; tampoco se incluyen capturas de gobierno/lineage si no fueron cargadas como PNG.
 
 Para reanudar el levantamiento se requiere una sesión de consola GCP accesible o un entorno autenticado con `gcloud` y `bq` disponibles y permisos de lectura sobre el proyecto `retailsmart-bigdata`. Cualquier consulta o acción no incluida en lectura seguirá sujeta al control de costos y autorización definido en este informe.
 

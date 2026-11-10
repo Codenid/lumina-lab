@@ -5,7 +5,7 @@
 | [`arquitectura/`](arquitectura/) | alcance, contratos de referencia, mapeo ArchiMate→GCP, productores y relación componente→scripts |
 | [`funcional/`](funcional/) | casos de uso y productos Gold |
 | [`operacion/`](operacion/) | secuencia reproducible y runbooks manuales por capacidad |
-| [`informe-tecnico/`](informe-tecnico/) | informe de implementación, arquitectura y evidencia gráfica |
+| [`informe-tecnico/`](informe-tecnico/) | informe oficial en LaTeX/PDF; el Markdown se conserva como histórico |
 
 Las definiciones desplegables no están en `docs/`: se agrupan por capacidad en
 [`../soluciones/`](../soluciones/), con su tecnología, destino GCP y scripts
